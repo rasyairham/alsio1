@@ -7,57 +7,80 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const username = localStorage.getItem("username");
-    // Proteksi halaman: Jika tidak ada username (belum login), tendang ke login
     if (!username) {
       navigate("/login");
+      return;
     }
     setUser(username);
   }, [navigate]);
 
   const handleLogout = () => {
-    // 1. Bersihkan semua data login dari browser
-    localStorage.clear(); 
-
-    // 2. Langsung arahkan ke Homepage ("/")
-    // Menggunakan window.location agar Navbar ikut ter-refresh otomatis
-    window.location.href = "/"; 
+    localStorage.clear();
+    window.location.href = "/";
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 pt-32 px-6 flex justify-center">
-      <div className="bg-white/5 border border-white/10 p-10 rounded-3xl backdrop-blur-md w-full max-w-lg text-center shadow-2xl h-fit">
-        
-        {/* Avatar Profile */}
-        <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full mx-auto flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
-          <i className="ri-user-3-fill text-white text-5xl"></i>
-        </div>
+    <div className="min-h-screen bg-slate-950 relative overflow-hidden flex items-center justify-center px-6 py-20">
+      {/* Background blur */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"></div>
 
-        <h2 className="text-3xl font-bold text-white mb-2 uppercase tracking-widest">
-          {user || "User ALSIO"}
-        </h2>
-        <p className="text-gray-400 mb-10 italic">Anggota Kelompok 8</p>
-
-        <div className="space-y-4">
-          <button className="w-full py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all text-sm font-medium">
-            Pengaturan Akun
-          </button>
+      <div className="relative w-full max-w-md">
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.45)] text-center">
           
-          {/* TOMBOL LOGOUT KE HOMEPAGE */}
-          <button 
-            onClick={handleLogout}
-            className="w-full py-3 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl border border-red-600/30 transition-all font-bold flex items-center justify-center gap-2"
+          {/* Avatar */}
+          <div className="relative w-28 h-28 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 blur-md opacity-70"></div>
+            <div className="relative w-full h-full rounded-full bg-slate-900 border border-white/10 flex items-center justify-center">
+              <i className="ri-user-3-fill text-white text-5xl"></i>
+            </div>
+          </div>
+
+          {/* Username */}
+          <h1 className="text-3xl font-bold text-white tracking-wide">
+            {user || "User ALSIO"}
+          </h1>
+          <p className="text-gray-400 mt-2 text-sm">
+            Selamat datang di halaman profil
+          </p>
+
+          {/* Info Card */}
+          <div className="mt-8 grid gap-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-left">
+              <p className="text-gray-400 text-sm">Username</p>
+              <p className="text-white font-semibold text-lg">{user || "User ALSIO"}</p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-left">
+              <p className="text-gray-400 text-sm">Status</p>
+              <p className="text-green-400 font-medium">Aktif</p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-8 space-y-3">
+            <button className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20 text-white font-semibold transition-all">
+              Pengaturan Akun
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full py-3 rounded-xl bg-red-600/10 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white font-semibold transition-all flex items-center justify-center gap-2"
+            >
+              <i className="ri-logout-box-r-line"></i>
+              Logout & Keluar
+            </button>
+          </div>
+
+          {/* Back */}
+          <button
+            onClick={() => navigate("/")}
+            className="mt-6 text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1"
           >
-            <i className="ri-logout-box-r-line"></i>
-            Logout & Keluar
+            <i className="ri-arrow-left-line"></i>
+            Kembali ke Beranda
           </button>
         </div>
-
-        <button 
-          onClick={() => navigate("/")}
-          className="mt-8 text-gray-500 hover:text-white text-sm transition-colors"
-        >
-          <i className="ri-arrow-left-line mr-1"></i> Kembali ke Beranda
-        </button>
       </div>
     </div>
   );
