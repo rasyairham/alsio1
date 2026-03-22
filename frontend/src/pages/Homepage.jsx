@@ -148,7 +148,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* 4. CONTACT SECTION */}
       <section id="contact" className="min-h-[80vh] flex flex-col items-center justify-center px-6 py-20 border-t border-white/5">
         <div className="max-w-4xl w-full text-center space-y-10 bg-gradient-to-tr from-blue-600/10 via-transparent to-purple-600/10 p-10 md:p-20 rounded-[40px] border border-white/5 backdrop-blur-sm relative overflow-hidden">
           
