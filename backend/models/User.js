@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 }, { timestamps: true });
 
-// HASH PASSWORD (Versi Async yang Benar)
 userSchema.pre('save', async function() {
   // Jika password tidak berubah, langsung keluar (tanpa next)
   if (!this.isModified('password')) return;

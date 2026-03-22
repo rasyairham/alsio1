@@ -38,7 +38,6 @@ const Homepage = () => {
 
       </div>
 
-      {/* Statistik Simpel (Placeholder) */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mt-20 border-t border-white/5 pt-10 w-full max-w-4xl text-center">
         <div>
           <p className="text-3xl font-bold">100%</p>
