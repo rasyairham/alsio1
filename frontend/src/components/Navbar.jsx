@@ -71,7 +71,7 @@ const Navbar = () => {
   const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : "A");
 
   return (
-    <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-[60] bg-black/80 backdrop-blur-md text-white p-4 rounded-2xl border border-white/10 shadow-2xl">
+    <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-[60] bg-white/80 backdrop-blur-md text-black p-4 rounded-2xl border border-black/10 shadow-2xl">
       <div className="container mx-auto flex justify-between items-center px-2">
         
         {/* LOGO & BRAND SECTION */}
@@ -84,7 +84,7 @@ const Navbar = () => {
             <img 
               src="/alsio.webp" 
               alt="Logo" 
-              className="w-full h-full object-contain rounded-full border border-white/20 shadow-lg group-hover:ring-2 ring-blue-500/50 transition-all" 
+              className="w-full h-full object-contain rounded-full border border-black/20 shadow-lg group-hover:ring-2 ring-blue-500/50 transition-all" 
               onError={(e) => { 
                 e.target.src = "https://ui-avatars.com/api/?name=A&background=2563eb&color=fff"; 
               }} 
@@ -126,7 +126,7 @@ const Navbar = () => {
                     key={link.path}
                     to={link.path} 
                     className={({ isActive }) => 
-                      `text-sm transition-colors ${isActive ? "text-blue-400 font-bold" : "text-white/60 hover:text-white"}`
+                      `text-sm transition-colors ${isActive ? "text-black-400 font-bold" : "text-black/60 hover:text-black"}`
                     }
                   >
                     {link.label}
@@ -140,7 +140,7 @@ const Navbar = () => {
                   className="flex items-center gap-3 cursor-pointer group select-none py-1"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-700 to-blue-500 flex items-center justify-center border border-white/20 shadow-lg group-hover:ring-2 ring-blue-500/50 transition-all overflow-hidden relative">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-black-700 to-black-500 flex items-center justify-center border border-black/20 shadow-lg group-hover:ring-2 ring-black-500/50 transition-all overflow-hidden relative">
                     {userImage ? (
                       <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
@@ -152,7 +152,7 @@ const Navbar = () => {
                     <span className="text-sm font-semibold hidden sm:block truncate max-w-[80px]">
                       {user}
                     </span>
-                    <i className={`ri-arrow-down-s-line text-xl transition-transform duration-300 ${showDropdown ? "rotate-180 text-blue-400" : "text-white/40"}`}></i>
+                    <i className={`ri-arrow-down-s-line text-xl transition-transform duration-300 ${showDropdown ? "rotate-180 text-black-400" : "text-black/40"}`}></i>
                   </div>
                 </div>
 
