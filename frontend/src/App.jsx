@@ -18,15 +18,22 @@ function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const location = useLocation();
 
+  // Logika untuk menyembunyikan Navbar & Footer
+  const hideLayout = ['/login', '/register'].includes(location.pathname);
+
   useEffect(() => {
+    // Memastikan status auth selalu update setiap pindah halaman
     setIsAuth(!!localStorage.getItem("token"));
   }, [location.pathname]);
 
   return (
     <>
-      <Navbar />
-      <main className="min-h-screen">
+      {/* Navbar hanya muncul jika TIDAK di path login/register */}
+      {!hideLayout && <Navbar />}
+
+      <main className={hideLayout ? "" : "min-h-screen pt-20 md:pt-24"}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={isAuth ? <Navigate to="/dashboard" replace /> : <Homepage />} />
           <Route path="/login" element={isAuth ? <Navigate to="/dashboard" replace /> : <Loginpage />} />
           <Route path="/register" element={isAuth ? <Navigate to="/dashboard" replace /> : <Registerpage />} />
@@ -37,10 +44,13 @@ function App() {
           <Route path="/quests" element={isAuth ? <Questpage /> : <Navigate to="/login" replace />} />
           <Route path="/analytics" element={isAuth ? <Analyticspage /> : <Navigate to="/login" replace />} />
 
+          {/* Catch-all: Redirect ke home jika route tidak ada */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
+
+      {/* Footer hanya muncul jika TIDAK di path login/register */}
+      {!hideLayout && <Footer />}
     </>
   );
 }
