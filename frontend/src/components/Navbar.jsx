@@ -75,7 +75,11 @@ const Navbar = () => {
   return (
     <>
       <style>{fontStyle}</style>
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-[60] bg-white/80 backdrop-blur-md text-black p-4 rounded-2xl border border-black/10 shadow-2xl">
+     <nav
+  className="fixed left-1/2 -translate-x-1/2 z-[60] bg-white/90 backdrop-blur-md text-black border border-black/10 shadow-2xl flex items-center"
+  style={{ width: "1163px", height: "81px", padding: "0 24px", borderRadius: "42px", top: "24px" }}
+>
+      
         <div className="container mx-auto flex justify-between items-center px-2">
 
           {/* LOGO & BRAND SECTION */}
