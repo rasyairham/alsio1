@@ -52,21 +52,20 @@ const userSchema = new mongoose.Schema({
 });
 
 // --- MIDDLEWARE: HASH PASSWORD SEBELUM SIMPAN ---
-userSchema.pre('save', async function(next) {
-  // Jika password tidak dimodifikasi, langsung lanjut
+// PERBAIKAN: Menghapus parameter 'next' karena menggunakan 'async'
+userSchema.pre('save', async function() {
+  // Jika password tidak dimodifikasi, langsung keluar (return)
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
   
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    
-    // PENTING: Panggil next() di sini agar Mongoose tahu proses async selesai
-    next(); 
+    // Di fungsi async, Mongoose otomatis lanjut setelah promise resolve
   } catch (error) {
-    // Jika ada error saat hashing, kirim error ke middleware Express
-    return next(error); 
+    // Melempar error agar ditangkap oleh penanganan error Mongoose/Express
+    throw error; 
   }
 });
 

@@ -12,11 +12,10 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Gunakan Map untuk performa memori yang lebih baik daripada Object biasa
 let tempOTPs = new Map(); 
 
 // --- 1. SEND OTP ---
-exports.sendOTP = async (req, res) => {
+exports.sendOTP = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -31,7 +30,6 @@ exports.sendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Simpan ke Map
     tempOTPs.set(email, {
       otp: otp,
       expires: Date.now() + 300000 
@@ -56,12 +54,12 @@ exports.sendOTP = async (req, res) => {
     res.status(200).json({ message: "OTP terkirim ke email!" });
 
   } catch (error) {
-    res.status(500).json({ message: "Gagal mengirim email: " + error.message });
+    next(error);
   }
 };
 
 // --- 2. REGISTER ---
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
   try {
     const { username, email, password, otp } = req.body;
 
@@ -75,21 +73,20 @@ exports.register = async (req, res) => {
     
     if (storedData.otp !== otp) return res.status(400).json({ message: "OTP Salah!" });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = new User({ username, email, password: hashedPassword });
+    // PERBAIKAN: Jangan hash di sini. Langsung masukkan password asli.
+    // Middleware pre('save') di User.js baris 69 akan menghashnya otomatis.
+    const user = new User({ username, email, password }); 
     await user.save();
 
-    tempOTPs.delete(email); // Hapus setelah berhasil
+    tempOTPs.delete(email);
     res.status(201).json({ message: "Registrasi Berhasil!" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error); 
   }
 };
 
 // --- 3. FORGOT PASSWORD ---
-exports.forgotPassword = async (req, res) => {
+exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -102,23 +99,18 @@ exports.forgotPassword = async (req, res) => {
       from: `"ALSIO Support" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Reset Password - ALSIO',
-      html: `
-        <div style="font-family: sans-serif; text-align:center; padding: 20px;">
-          <h2 style="color: #C29976;">Reset Password Code</h2>
-          <h1 style="font-size: 40px; letter-spacing: 5px;">${otp}</h1>
-          <p>Masukkan kode ini untuk mengganti password kamu.</p>
-        </div>`
+      html: `<div style="text-align:center;"><h2>Reset Code</h2><h1>${otp}</h1></div>`
     };
 
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: "OTP Reset dikirim ke email!" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
 // --- 4. RESET PASSWORD ---
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async (req, res, next) => {
   try {
     const { email, otp, newPassword } = req.body;
     const storedData = tempOTPs.get(email);
@@ -127,31 +119,29 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: "OTP Salah atau Kadaluwarsa!" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    // PERBAIKAN: Gunakan findOne + save agar memicu middleware hashing di model.
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
 
-    // MENGHILANGKAN WARNING: returnDocument: 'after'
-    await User.findOneAndUpdate(
-      { email }, 
-      { password: hashedPassword },
-      { returnDocument: 'after' }
-    );
+    user.password = newPassword; 
+    await user.save(); 
     
     tempOTPs.delete(email);
     res.status(200).json({ message: "Password berhasil diperbarui!" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
 // --- 5. LOGIN ---
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }); 
     if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Menggunakan method dari model User.js
+    const isMatch = await user.matchPassword(password);
     if (!isMatch) return res.status(400).json({ message: "Password salah" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -165,21 +155,19 @@ exports.login = async (req, res) => {
       totalTasksDone: user.totalTasksDone || 0
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
 // --- 6. UPDATE PROFILE ---
-exports.updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res, next) => {
   try {
     const { username, profileImage } = req.body;
     
-    // Pastikan req.user ada (dari middleware auth)
     if (!req.user || !req.user.id) {
         return res.status(401).json({ message: "Not authorized" });
     }
 
-    // MENGHILANGKAN WARNING: returnDocument: 'after'
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { username, profileImage },
@@ -195,17 +183,17 @@ exports.updateProfile = async (req, res) => {
       profileImage: user.profileImage
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
 
 // --- 7. GET ME ---
-exports.getMe = async (req, res) => {
+exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
