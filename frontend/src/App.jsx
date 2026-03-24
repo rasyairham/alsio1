@@ -13,13 +13,15 @@ import Loginpage from './pages/Loginpage';
 import Registerpage from './pages/Registerpage';
 import Questpage from './pages/Questpage';
 import Analyticspage from './pages/Analyticspage';
+import ForgotPassword from './pages/ForgotPassword'; // Pastikan path file ini benar
+import NotificationPage from './pages/Notificationpage';
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const location = useLocation();
 
-  // Logika untuk menyembunyikan Navbar & Footer
-  const hideLayout = ['/login', '/register'].includes(location.pathname);
+  // Tambahkan '/forgot-password' ke dalam list hideLayout
+  const hideLayout = ['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   useEffect(() => {
     // Memastikan status auth selalu update setiap pindah halaman
@@ -28,7 +30,7 @@ function App() {
 
   return (
     <>
-      {/* Navbar hanya muncul jika TIDAK di path login/register */}
+      {/* Navbar hanya muncul jika TIDAK di path login/register/forgot-password */}
       {!hideLayout && <Navbar />}
 
       <main className={hideLayout ? "" : "min-h-screen pt-20 md:pt-24"}>
@@ -38,18 +40,22 @@ function App() {
           <Route path="/login" element={isAuth ? <Navigate to="/dashboard" replace /> : <Loginpage />} />
           <Route path="/register" element={isAuth ? <Navigate to="/dashboard" replace /> : <Registerpage />} />
           
+          {/* Tambahkan Route Forgot Password (Public) */}
+          <Route path="/forgot-password" element={isAuth ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
+          
           {/* Protected Routes */}
           <Route path="/dashboard" element={isAuth ? <Dashboardpage /> : <Navigate to="/login" replace />} />
           <Route path="/profile" element={isAuth ? <Profilepage /> : <Navigate to="/login" replace />} />
           <Route path="/quests" element={isAuth ? <Questpage /> : <Navigate to="/login" replace />} />
           <Route path="/analytics" element={isAuth ? <Analyticspage /> : <Navigate to="/login" replace />} />
+          <Route path="/notifications" element={isAuth ? <NotificationPage /> : <Navigate to="/login" replace />} />
 
           {/* Catch-all: Redirect ke home jika route tidak ada */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* Footer hanya muncul jika TIDAK di path login/register */}
+      {/* Footer hanya muncul jika TIDAK di path login/register/forgot-password */}
       {!hideLayout && <Footer />}
     </>
   );
