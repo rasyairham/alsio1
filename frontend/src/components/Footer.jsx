@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import 'remixicon/fonts/remixicon.css';
 
 const fontStyle = `
@@ -11,6 +11,31 @@ const POP = { fontFamily: "'Poppins', sans-serif" };
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Fungsi untuk handle scroll halus
+  const handleNavClick = (id) => {
+    const elementId = id.toLowerCase();
+    
+    // Jika user sedang tidak di Home page, pindah ke Home dulu baru scroll
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(elementId);
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      // Jika sudah di Home, langsung scroll
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Jika ID tidak ditemukan (misal Home), scroll ke paling atas
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <>
@@ -43,15 +68,19 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Explore Links */}
+            {/* Explore Links - Menggunakan Button/Anchor untuk Scroll */}
             <div className="space-y-6">
               <h4 className="text-[11px] text-gray-400 uppercase tracking-widest" style={{ ...PJS, fontWeight: 900 }}>Explore</h4>
               <ul className="space-y-4">
                 {['Home', 'About', 'Features', 'Contact'].map((item) => (
                   <li key={item}>
-                    <Link to="/" className="text-sm text-gray-600 hover:text-[#C17A3A] transition-colors" style={{ ...POP, fontWeight: 500 }}>
+                    <button 
+                      onClick={() => handleNavClick(item)}
+                      className="text-sm text-gray-600 hover:text-[#C17A3A] transition-colors bg-transparent border-none cursor-pointer p-0" 
+                      style={{ ...POP, fontWeight: 500 }}
+                    >
                       {item}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -63,13 +92,13 @@ const Footer = () => {
               <ul className="space-y-4">
                 {['Privacy Policy', 'Terms of Service', 'FAQ', 'Help Center'].map((item) => (
                   <li key={item}>
-                    <Link
-                      to={`/${item.toLowerCase().replace(/ /g, '-')}`}
-                      className="text-sm text-gray-600 hover:text-[#C17A3A] transition-colors"
+                    <button
+                      onClick={() => navigate(`/${item.toLowerCase().replace(/ /g, '-')}`)}
+                      className="text-sm text-gray-600 hover:text-[#C17A3A] transition-colors bg-transparent border-none cursor-pointer p-0 text-left"
                       style={{ ...POP, fontWeight: 500 }}
                     >
                       {item}
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>

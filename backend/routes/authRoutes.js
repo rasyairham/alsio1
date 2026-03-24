@@ -4,19 +4,17 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { protect } = require('../middleware/auth');
+const authController = require('../controllers/authController'); // Import controller untuk OTP
 
-// 1. REGISTER
-router.post('/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    await User.create({ username, email, password });
-    res.status(201).json({ message: "Berhasil Registrasi!" });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// 1. SEND OTP (Tambahan Baru)
+// Dipanggil saat user klik "GET VERIFIED"
+router.post('/send-otp', authController.sendOTP);
 
-// 2. LOGIN (Kirim data lengkap ke Frontend)
+// 2. REGISTER (Diperbarui untuk mendukung OTP)
+// Menggunakan logika dari controller agar verifikasi OTP berjalan
+router.post('/register', authController.register);
+
+// 3. LOGIN (Tetap sesuai konsep asli kamu)
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -40,14 +38,14 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// 3. UPDATE PROFILE
+// 4. UPDATE PROFILE (Tetap sesuai konsep asli kamu)
 router.put('/update-profile', protect, async (req, res) => {
   try {
     const { username, profileImage } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id, 
       { username, profileImage },
-      { returnDocument: 'after' } 
+      { new: true } // Menggunakan 'new: true' agar mengembalikan data terbaru
     );
     
     if (!updatedUser) return res.status(404).json({ message: "User tidak ditemukan" });
