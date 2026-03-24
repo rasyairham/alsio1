@@ -35,17 +35,37 @@ const LoginPage = () => {
   return (
     <>
       <style>{fontStyle}</style>
-      <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center p-6 antialiased" style={POP}>
+      <div className="min-h-screen bg-[#F5F0E8] flex flex-col items-center justify-center p-6 antialiased" style={POP}>
+        
         {/* Background Decoration */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#C17A3A]/10 blur-[120px] rounded-full"></div>
           <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#A0652E]/10 blur-[120px] rounded-full"></div>
         </div>
 
+        {/* TOMBOL BACK (Berada di atas Card) */}
+        <div className="w-full max-w-[900px] mb-4 z-20">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-[#C17A3A] hover:text-[#A0652E] transition-all group font-bold text-sm"
+            style={PJS}
+          >
+            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all">
+              <i className="ri-arrow-left-line text-lg"></i>
+            </div>
+            <span>Back to Home</span>
+          </button>
+        </div>
+
         <div className="w-full max-w-[900px] bg-white rounded-[32px] shadow-[0_20px_60px_rgba(193,122,58,0.12)] flex overflow-hidden relative z-10 transition-all duration-500 hover:shadow-[0_30px_80px_rgba(193,122,58,0.18)]">
 
           {/* LEFT PANEL */}
-          <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#C17A3A] via-[#B06A2A] to-[#A0652E] p-12 flex-col justify-end relative overflow-hidden">
+          <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#C17A3A] via-[#B06A2A] to-[#A0652E] p-12 flex-col justify-between relative overflow-hidden">
+            <div className="z-10 flex items-center gap-2">
+               <img src="/alsio.webp" alt="Logo" className="w-8 h-8 object-contain" />
+               <span className="text-white font-black tracking-tighter" style={PJS}>ALSIO</span>
+            </div>
+            
             <div className="z-10">
               <h1 className="text-5xl text-white leading-tight mb-4 tracking-tighter" style={{ ...PJS, fontWeight: 900 }}>
                 Welcome.
@@ -65,7 +85,7 @@ const LoginPage = () => {
 
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
-              <div className="space-y-2 group">
+              <div className="space-y-2 group text-left">
                 <label className="text-[11px] text-gray-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                   Email Address
                 </label>
@@ -85,7 +105,7 @@ const LoginPage = () => {
               </div>
 
               {/* Password */}
-              <div className="space-y-2 group">
+              <div className="space-y-2 group text-left">
                 <label className="text-[11px] text-gray-400 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                   Security Key
                 </label>
