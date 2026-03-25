@@ -5,13 +5,13 @@ import { ChevronLeft, Inbox, Zap, AlertCircle, CheckCircle2, Trash2 } from 'luci
 const NotificationPage = () => {
   const navigate = useNavigate();
   
-  // Data dummy notifikasi
+  // Dummy notifications data
   const [notifications, setNotifications] = useState([
     {
       id: 1,
       type: 'reward',
       title: 'Quest Reward Claimed!',
-      desc: 'Kamu baru saja mendapatkan +150 XP dari misi "Daily Coding".',
+      desc: 'You just received +150 XP from the "Daily Coding" mission.',
       time: '2 mins ago',
       read: false,
     },
@@ -19,7 +19,7 @@ const NotificationPage = () => {
       id: 2,
       type: 'system',
       title: 'New Tier Unlocked',
-      desc: 'Selamat! Kamu sekarang adalah seorang "Commander".',
+      desc: 'Congratulations! You are now a "Commander".',
       time: '1 hour ago',
       read: false,
     },
@@ -27,7 +27,7 @@ const NotificationPage = () => {
       id: 3,
       type: 'alert',
       title: 'Deadline Approaching',
-      desc: 'Misi "Final Project UI" akan berakhir dalam 3 jam!',
+      desc: 'The "Final Project UI" mission will end in 3 hours!',
       time: '5 hours ago',
       read: true,
     }
@@ -65,7 +65,7 @@ const NotificationPage = () => {
             onClick={markAllAsRead}
             className="text-[10px] font-black uppercase tracking-widest text-[#C29976] hover:underline"
           >
-            Mark all read
+            Mark All as Read
           </button>
         </div>
 
@@ -110,7 +110,7 @@ const NotificationPage = () => {
           ) : (
             <div className="text-center py-24 bg-white/50 rounded-[4rem] border-4 border-dashed border-zinc-200">
               <Inbox className="w-16 h-16 text-zinc-200 mx-auto mb-6" />
-              <p className="text-zinc-400 font-black uppercase tracking-[0.4em] text-xs">No Incoming Transmission</p>
+              <p className="text-zinc-400 font-black uppercase tracking-[0.4em] text-xs">No Incoming Messages</p>
             </div>
           )}
         </div>

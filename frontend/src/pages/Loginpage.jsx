@@ -14,23 +14,35 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState(""); // inline error for email/password
+  const [successMsg, setSuccessMsg] = useState(""); // inline success for login
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setEmailError("");
+    setSuccessMsg("");
+
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+
+      // Save user info to localStorage
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.username);
       localStorage.setItem('email', res.data.email);
       localStorage.setItem('userImage', res.data.profileImage || "");
-      window.location.href = "/";
+
+      setSuccessMsg("Login successful! Redirecting...");
+      setTimeout(() => navigate('/'), 1000);
+
     } catch (err) {
-      alert(err.response?.data?.message || "Login Gagal! Periksa kembali email dan password Anda.");
-    } finally {
-      setIsLoading(false);
+      let backendMsg = err.response?.data?.message || "";
+      if (backendMsg.toLowerCase().includes('email') || backendMsg.toLowerCase().includes('password')) {
+        backendMsg = "Invalid email or password.";
+      } else if (!backendMsg) {
+        backendMsg = "Login failed. Please check your credentials.";
+      }
+      setEmailError(backendMsg);
     }
   };
 
@@ -38,18 +50,15 @@ const LoginPage = () => {
     <>
       <style>{fontStyle}</style>
       <div className="min-h-screen bg-[#FAF7F4] flex flex-col items-center justify-center p-6 antialiased" style={POP}>
-        
-        {/* Background Decoration */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#C17A3A]/10 blur-[120px] rounded-full"></div>
-          <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#A0652E]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#946C44]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#7A5836]/10 blur-[120px] rounded-full"></div>
         </div>
 
-        {/* TOMBOL BACK (Di atas Card) */}
         <div className="w-full max-w-[1050px] mb-4 z-20">
           <button 
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-[#C17A3A] hover:text-[#A0652E] transition-all group font-bold text-sm"
+            className="flex items-center gap-2 text-[#946C44] hover:text-[#7A5836] transition-all group font-bold text-sm"
             style={PJS}
           >
             <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all">
@@ -61,7 +70,6 @@ const LoginPage = () => {
 
         <div className="w-full max-w-[1050px] h-auto md:h-[583px] bg-white rounded-[32px] shadow-[0_1px_9px_rgba(0,0,0,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 transition-all duration-500 hover:shadow-[0_1px_9px_rgba(0,0,0,0.25)]">
 
-          {/* LEFT PANEL */}
           <div
             className="hidden md:flex w-full md:w-[525px] h-[300px] md:h-full bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden z-20"
             style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
@@ -77,7 +85,6 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* RIGHT PANEL - FORM */}
           <div className="w-full md:w-[525px] h-full p-8 md:p-16 bg-white flex flex-col justify-center">
             <div className="mb-8 text-center md:text-left">
               <h2 className="text-3xl text-[#111] tracking-tight mb-2" style={{ ...PJS, fontWeight: 900, fontSize: "32px" }}>Welcome Back</h2>
@@ -87,40 +94,38 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
-              {/* Email / Username */}
               <div className="space-y-2 group">
-                <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
                   Username / Email
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#946C44] transition-colors">
                     <User className="w-5 h-5" />
                   </span>
                   <input
                     type="email"
                     placeholder="Enter your username / email"
                     required
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
                     style={POP}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-2 group">
-                <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
                   Password
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#946C44] transition-colors">
                     <Lock className="w-5 h-5" />
                   </span>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     required
-                    className="w-full pl-12 pr-12 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
                     style={POP}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
@@ -134,7 +139,18 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Remember Me + Forgot Password */}
+              {/* Inline notification */}
+              {emailError && (
+                <p className="text-red-500 text-[10px] ml-1 mt-1">
+                  {emailError}
+                </p>
+              )}
+              {successMsg && (
+                <p className="text-[#946C44] text-[10px] ml-1 mt-1">
+                  {successMsg}
+                </p>
+              )}
+
               <div className="flex justify-between items-center py-1">
                 <label className="flex items-center cursor-pointer">
                   <input
@@ -143,55 +159,42 @@ const LoginPage = () => {
                     checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
                   />
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${rememberMe ? "border-[#C17A3A] bg-[#C17A3A]" : "border-gray-300 bg-white"}`}>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${rememberMe ? "border-[#946C44] bg-[#946C44]" : "border-gray-300 bg-white"}`}>
                     {rememberMe && <Check className="w-3 h-3 text-white" />}
                   </div>
                   <span className="ml-2 text-xs" style={{ ...PJS, fontWeight: 700, color: "#0C0C0D" }}>Remember Me</span>
                 </label>
-                <Link to="/forgot-password" size="xs" className="text-xs text-[#C17A3A] hover:text-[#A0652E] font-bold" style={PJS}>
+                <Link to="/forgot-password" className="text-xs text-[#946C44] hover:text-[#7A5836] font-bold" style={PJS}>
                   Forgot Password?
                 </Link>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full h-[40px] rounded-2xl uppercase tracking-[2px] flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 disabled:opacity-50"
+                className="w-full h-[40px] rounded-2xl uppercase flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 mt-4"
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontWeight: 800,
                   fontSize: "13px",
-                  letterSpacing: "-0.5px",
+                  letterSpacing: "2px", // <-- jarak antar huruf
                   backgroundImage: "url('/images/Login_Button.png')",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
               >
-                {isLoading ? "Authenticating..." : "LOGIN"}
+                LOGIN
               </button>
             </form>
 
             <p className="mt-8 text-center text-gray-400 text-xs" style={{ ...POP, fontWeight: 500 }}>
               Don't have an account?{' '}
-              <Link to="/register" className="text-[#C17A3A] hover:underline underline-offset-4 font-bold" style={PJS}>
+              <Link to="/register" className="text-[#946C44] hover:underline underline-offset-4 font-bold" style={PJS}>
                 Sign Up
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Footer Branding */}
-        <div className="fixed bottom-0 w-full bg-[#FEFDFC] border-t border-gray-100">
-          <div className="flex flex-col md:flex-row justify-between items-center px-8 py-3 text-[11px] md:text-[13px] text-gray-400" style={{ ...POP, fontWeight: 400 }}>
-            <span>© 2026 ALSIO. All rights reserved.</span>
-            <div className="flex gap-6 mt-2 md:mt-0">
-              {['Privacy', 'Terms', 'Support'].map(item => (
-                <span key={item} className="hover:text-gray-600 cursor-pointer transition-colors capitalize">{item}</span>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </>
   );

@@ -11,6 +11,7 @@ const POP = { fontFamily: "'Poppins', sans-serif" };
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [activeItem, setActiveItem] = useState("");
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState("");
   const [userImage, setUserImage] = useState(null);
@@ -24,11 +25,7 @@ const Navbar = () => {
     if (token && username) {
       setIsLogin(true);
       setUser(username);
-      if (savedImage && savedImage !== "null" && savedImage !== "undefined") {
-        setUserImage(savedImage);
-      } else {
-        setUserImage(null);
-      }
+      setUserImage(savedImage && savedImage !== "null" && savedImage !== "undefined" ? savedImage : null);
     } else {
       setIsLogin(false);
       setUser("");
@@ -37,10 +34,12 @@ const Navbar = () => {
   };
 
   useEffect(() => { loadUserData(); }, [location.pathname]);
+
   useEffect(() => {
     window.addEventListener("storage", loadUserData);
     return () => window.removeEventListener("storage", loadUserData);
   }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -75,139 +74,152 @@ const Navbar = () => {
   return (
     <>
       <style>{fontStyle}</style>
-     <nav
-  className="fixed left-1/2 -translate-x-1/2 z-[60] bg-white/90 backdrop-blur-md text-black border border-black/10 shadow-2xl flex items-center"
-  style={{ width: "1163px", height: "81px", padding: "0 24px", borderRadius: "42px", top: "24px" }}
->
-      
-        <div className="container mx-auto flex justify-between items-center px-2">
+      <nav
+        className="fixed left-1/2 -translate-x-1/2 z-[60] bg-white/90 backdrop-blur-md text-black border border-black/10 shadow-2xl flex items-center"
+        style={{ width: "1163px", height: "81px", padding: "0 32px", borderRadius: "42px", top: "24px" }}
+      >
+        <div className="w-full flex justify-between items-center">
 
-          {/* LOGO & BRAND SECTION */}
           <div
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-4 cursor-pointer group"
             onClick={() => (isLogin ? navigate("/dashboard") : navigate("/"))}
+            style={{ height: "100%" }}
           >
-            <div className="w-10 h-10 rounded-full">
-              <img
-                src="/alsio.webp"
-                alt="Logo"
-                className="w-full h-full object-contain rounded-full border border-black/20 shadow-lg group-hover:ring-2 ring-blue-500/50 transition-all"
-                onError={(e) => {
-                  e.target.src = "https://ui-avatars.com/api/?name=A&background=2563eb&color=fff";
-                }}
-              />
-            </div>
-            <h1 className="text-xl tracking-tighter group-hover:text-blue-400 transition-colors uppercase" style={{ ...PJS, fontWeight: 900 }}>
-              ALSIO
-            </h1>
+            <img
+              src="/alsio.webp"
+              alt="Logo"
+              className="object-contain transition-transform group-hover:scale-105"
+              style={{ width: "64px", height: "78px" }}
+            />
+            <img
+              src="/Text_Alsio.webp"
+              alt="ALSIO"
+              className="object-contain transition-transform group-hover:scale-105"
+              style={{ width: "118px", height: "118px", marginLeft: "-50px", marginTop: "5px" }}
+            />
           </div>
 
-          <div className="flex gap-4 md:gap-6 items-center">
-            {!isLogin ? (
-              <>
-                <div className="hidden md:flex gap-6">
-                  {["home", "about", "feature", "contact"].map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => scrollToSection(item)}
-                      className="hover:text-blue-300 transition-colors text-sm capitalize opacity-70 hover:opacity-100"
-                      style={{ ...POP, fontWeight: 500 }}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-3 ml-4 border-l border-white/20 pl-6">
-                  <NavLink
-                    to="/login"
-                    className="px-4 py-2 border border-white/20 rounded-xl hover:bg-white/10 text-sm transition-all active:scale-95"
-                    style={{ ...POP, fontWeight: 500 }}
-                  >
-                    Login
-                  </NavLink>
-                  <NavLink
-                    to="/register"
-                    className="px-4 py-2 rounded-xl text-sm active:scale-95 transition-all text-white"
-                    style={{ ...PJS, fontWeight: 700, backgroundColor: "#C17A3A", boxShadow: "0 4px 15px #C17A3A44" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#a8672e")}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#C17A3A")}
-                  >
-                    Daftar
-                  </NavLink>
-                </div>
-              </>
+          <div className="flex-1 flex justify-center gap-4">
+            {isLogin ? (
+              [
+                { path: "/dashboard", label: "Dashboard" },
+                { path: "/quests", label: "Quest Board" },
+                { path: "/analytics", label: "Analytics" },
+              ].map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `text-sm transition-colors ${isActive ? "text-black" : "text-black/60 hover:text-black"}`
+                  }
+                  style={({ isActive }) => ({
+                    ...(isActive ? PJS : POP),
+                    fontWeight: isActive ? 700 : 500,
+                    borderRadius: isActive ? "42px" : "0px",
+                    backgroundColor: isActive ? "#E0DCDC" : "transparent",
+                    boxShadow: isActive ? "0 2px 10px rgba(0,0,0,0.15)" : "none",
+                    padding: "6px 14px",
+                  })}
+                >
+                  {link.label}
+                </NavLink>
+              ))
             ) : (
-              <>
-                <div className="hidden lg:flex gap-6">
-                  {[
-                    { path: "/dashboard", label: "Dashboard" },
-                    { path: "/quests", label: "Quest Board" },
-                    { path: "/analytics", label: "Analytics" },
-                  ].map((link) => (
-                    <NavLink
-                      key={link.path}
-                      to={link.path}
-                      className={({ isActive }) =>
-                        `text-sm transition-colors ${isActive ? "text-black-400" : "text-black/60 hover:text-black"}`
-                      }
-                      style={({ isActive }) => (isActive ? { ...PJS, fontWeight: 700 } : { ...POP, fontWeight: 500 })}
-                    >
-                      {link.label}
-                    </NavLink>
-                  ))}
-                </div>
-
-                {/* Profile Dropdown */}
-                <div className="relative ml-4 border-l border-white/20 pl-6" ref={dropdownRef}>
-                  <div
-                    className="flex items-center gap-3 cursor-pointer group select-none py-1"
-                    onClick={() => setShowDropdown(!showDropdown)}
-                  >
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center border border-black/20 shadow-lg group-hover:ring-2 ring-black-500/50 transition-all overflow-hidden">
-                      {userImage ? (
-                        <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs text-white" style={{ ...PJS, fontWeight: 900 }}>{getInitial(user)}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm hidden sm:block truncate max-w-[80px]" style={{ ...POP, fontWeight: 600 }}>
-                        {user}
-                      </span>
-                      <i className={`ri-arrow-down-s-line text-xl transition-transform duration-300 ${showDropdown ? "rotate-180 text-black-400" : "text-black/40"}`}></i>
-                    </div>
-                  </div>
-
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-4 w-52 bg-white border border-black/10 rounded-2xl shadow-xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="px-4 py-3 border-b border-black/5 mb-1">
-                        <p className="text-sm text-black truncate" style={{ ...PJS, fontWeight: 700 }}>Hi, {user}</p>
-                        <p className="text-[11px] text-black/40 mt-0.5" style={{ ...POP, fontWeight: 400 }}>Level 5 Quest Beginner</p>
-                      </div>
-                      <div className="px-2">
-                        <button
-                          onClick={() => { navigate("/profile"); setShowDropdown(false); }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-black/60 hover:bg-black/5 hover:text-black rounded-xl transition-all"
-                          style={{ ...POP, fontWeight: 400 }}
-                        >
-                          <i className="ri-user-line text-black/40 text-lg"></i>
-                          Profile
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-black/60 hover:bg-black/5 hover:text-black rounded-xl transition-all"
-                          style={{ ...POP, fontWeight: 400 }}
-                        >
-                          <i className="ri-logout-box-r-line text-black/40 text-lg"></i>
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
+              ["home", "about", "feature", "contact"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => {
+                    scrollToSection(item);
+                    setActiveItem(item);
+                  }}
+                  className="text-sm capitalize opacity-70 hover:opacity-100 transition-all"
+                  style={{
+                    ...POP,
+                    fontWeight: 500,
+                    borderRadius: activeItem === item ? "42px" : "0px",
+                    backgroundColor: activeItem === item ? "#E0DCDC" : "transparent",
+                    boxShadow: activeItem === item ? "0 2px 10px rgba(0,0,0,0.15)" : "none",
+                    padding: "6px 14px",
+                  }}
+                >
+                  {item}
+                </button>
+              ))
             )}
           </div>
+
+          <div className="flex gap-3 items-center">
+            {!isLogin ? (
+              <>
+                <NavLink
+                  to="/login"
+                  className="px-4 py-2 rounded-xl hover:bg-black/5 text-sm transition-all active:scale-95"
+                  style={{ ...POP, fontWeight: 500 }}
+                >
+                  Login
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className="px-5 py-2 text-sm text-white transition-all active:scale-95"
+                  style={{ ...PJS, fontWeight: 700, backgroundColor: "#946C44", borderRadius: "42px", boxShadow: "0 4px 15px #946C4444" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#7A5836")}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#946C44")}
+                >
+                  Sign Up
+                </NavLink>
+              </>
+            ) : (
+              <div className="relative" ref={dropdownRef}>
+                <div
+                  className="flex items-center gap-3 cursor-pointer select-none"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center border border-black/20 overflow-hidden">
+                    {userImage ? (
+                      <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span
+                        className="text-xs text-white bg-black w-full h-full flex items-center justify-center"
+                        style={{ ...PJS, fontWeight: 900 }}
+                      >
+                        {getInitial(user)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm hidden sm:block truncate max-w-[80px]" style={{ ...POP, fontWeight: 600 }}>
+                    {user}
+                  </span>
+                  <i className={`ri-arrow-down-s-line text-xl transition-transform duration-300 ${showDropdown ? "rotate-180" : ""}`}></i>
+                </div>
+
+                {showDropdown && (
+                  <div className="absolute right-0 mt-4 w-52 bg-white border border-black/10 rounded-2xl shadow-xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-3 border-b border-black/5 mb-1">
+                      <p className="text-sm text-black truncate" style={{ ...PJS, fontWeight: 700 }}>Hi, {user}</p>
+                      <p className="text-[11px] text-black/40 mt-0.5" style={{ ...POP }}>Level 5 Quest Beginner</p>
+                    </div>
+                    <div className="px-2">
+                      <button
+                        onClick={() => { navigate("/profile"); setShowDropdown(false); }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-black/60 hover:bg-black/5 rounded-xl transition-all"
+                        style={{ ...POP }}
+                      >
+                        <i className="ri-user-line"></i> Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-black/60 hover:bg-black/5 rounded-xl transition-all"
+                        style={{ ...POP }}
+                      >
+                        <i className="ri-logout-box-r-line"></i> Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       </nav>
     </>

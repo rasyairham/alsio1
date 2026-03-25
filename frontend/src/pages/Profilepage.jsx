@@ -203,7 +203,7 @@ const ProfilePage = () => {
               <div className="flex gap-4 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-5 rounded-[1.5rem] bg-zinc-50 text-zinc-400 font-black text-xs uppercase tracking-widest">Cancel</button>
                 <button type="submit" disabled={loading} className="flex-1 py-5 rounded-[1.5rem] bg-[#C29976] text-white font-black text-xs uppercase tracking-widest">
-                    {loading ? "Saving..." : "Deploy"}
+                    {loading ? "Saving..." : "Update"}
                 </button>
               </div>
             </form>
