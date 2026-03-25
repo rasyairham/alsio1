@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-// IMPORT DARI FILE CONFIG KAMU (Sesuaikan path foldernya)
-import api from '../api/axios'; 
+import api from '../api/api'; 
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, Check, ArrowLeft } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Check, ArrowLeft, Loader2 } from "lucide-react";
 
 const fontStyle = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=Poppins:wght@400;500;600&display=swap');
@@ -12,34 +11,48 @@ const PJS = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const POP = { fontFamily: "'Poppins', sans-serif" };
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [emailError, setEmailError] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // TAMBAHAN: Loading state
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setEmailError("");
+    setErrorMsg("");
     setSuccessMsg("");
+    setIsLoading(true);
 
     try {
-      /** * PERBAIKAN: Cukup tulis '/auth/login'
-       * Karena baseURL di axios.js sudah diset ke '/api'
-       */
-      const res = await api.post('/auth/login', formData); 
+      const res = await api.post('/auth/login', {
+        // PERBAIKAN: Kirim identifier ke backend. 
+        // Pastikan backend ALSIO kamu menerima field 'email' atau 'identifier'
+        email: formData.identifier, 
+        password: formData.password
+      }); 
       
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('username', res.data.username);
-      localStorage.setItem('email', res.data.email);
-      localStorage.setItem('userImage', res.data.profileImage || "");
-
-      setSuccessMsg("Login successful! Redirecting...");
-      setTimeout(() => navigate('/'), 1000);
+      if (res.data.token) {
+        // Simpan token dengan aman
+        localStorage.setItem('token', res.data.token);
+        
+        // Opsional: Simpan data user agar tidak perlu fetch ulang di Dashboard
+        if (res.data.user) {
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+        }
+        
+        setSuccessMsg("Welcome back, Commander!");
+        
+        setTimeout(() => {
+          navigate('/dashboard'); 
+        }, 1200);
+      }
     } catch (err) {
-      let backendMsg = err.response?.data?.message || "Login failed. Please check your credentials.";
-      setEmailError(backendMsg);
+      const backendMsg = err.response?.data?.message || "Invalid credentials. Check your key.";
+      setErrorMsg(backendMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,151 +61,142 @@ const LoginPage = () => {
       <style>{fontStyle}</style>
       <div className="min-h-screen bg-[#FAF7F4] flex flex-col items-center justify-center p-4 sm:p-6 antialiased relative" style={POP}>
         
-        {/* Background Decorative Blurs */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#946C44]/10 blur-[80px] sm:blur-[120px] rounded-full"></div>
-          <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#7A5836]/10 blur-[80px] sm:blur-[120px] rounded-full"></div>
-        </div>
-
-        {/* Back Button Container */}
+        {/* Back Button */}
         <div className="w-full max-w-[1050px] mb-6 z-20 flex justify-start">
           <button 
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-[#946C44] hover:text-[#7A5836] transition-all group font-bold text-sm"
             style={PJS}
           >
-            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all">
+            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:-translate-x-1 transition-all border border-zinc-100">
               <ArrowLeft className="w-4 h-4" />
             </div>
-            <span className="hidden sm:inline">Back to Home</span>
+            <span>Back to Home</span>
           </button>
         </div>
 
-        {/* Main Card Container */}
-        <div className="w-full max-w-[1050px] bg-white rounded-[24px] sm:rounded-[32px] shadow-[0_1px_9px_rgba(0,0,0,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 transition-all duration-500 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+        {/* Main Card */}
+        <div className="w-full max-w-[1050px] bg-white rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] flex flex-col md:flex-row overflow-hidden relative z-10 border border-zinc-100">
           
+          {/* Left Panel - Image */}
           <div
-            className="hidden md:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden z-20"
+            className="hidden md:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative min-h-[600px]"
             style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
           >
-            <div className="z-10 bg-black/10 backdrop-blur-[2px] p-6 rounded-2xl">
+            {/* Overlay Gradient agar teks terbaca */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+            
+            <div className="z-10 bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/20 shadow-2xl">
               <h1 className="text-4xl lg:text-5xl text-white leading-tight mb-4 tracking-tighter" style={{ ...PJS, fontWeight: 900 }}>
                 Welcome.
               </h1>
-              <p style={{ ...PJS, fontWeight: 700, fontSize: "16px", color: "#FFFFFF" }}>
+              <p className="text-white/90 font-medium text-sm lg:text-base leading-relaxed" style={PJS}>
                 Ready to continue your mission?<br />
                 Enter the floating hall and start your productivity today.
               </p>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 p-6 sm:p-10 md:p-16 bg-white flex flex-col justify-center">
+          {/* Right Panel - Form */}
+          <div className="w-full md:w-1/2 p-8 sm:p-12 md:p-16 bg-white flex flex-col justify-center">
             
-            <div className="mb-8 text-center md:text-left">
-              <h2 className="text-2xl sm:text-3xl text-[#111] tracking-tight mb-2" style={{ ...PJS, fontWeight: 900 }}>
+            <div className="mb-10 text-center md:text-left">
+              <h2 className="text-3xl text-[#111] tracking-tighter mb-2" style={{ ...PJS, fontWeight: 900 }}>
                 Welcome Back
               </h2>
-              <p className="max-w-[280px] mx-auto md:mx-0" style={{ ...POP, fontWeight: 600, fontSize: "11px", color: "#0C0C0D", letterSpacing: "-0.1px" }}>
-                Stay on track, complete your quests, and improve your skills with ALSIO.
+              <p className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.2em]" style={POP}>
+                Ambisi Leveling Siswa Intelektual Optimal
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
-              <div className="space-y-1.5 group">
-                <label className="text-[12px] text-[#0C0C0D] ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
-                  Username / Email
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Input Identifier */}
+              <div className="space-y-2 group text-left">
+                <label className="text-[10px] text-zinc-400 uppercase tracking-widest ml-1 font-black group-focus-within:text-[#946C44] transition-colors">
+                  Email / Username
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#946C44] transition-colors">
-                    <User className="w-5 h-5" />
-                  </span>
+                  <User className="absolute left-4 w-5 h-5 text-zinc-300 group-focus-within:text-[#946C44] transition-colors" />
                   <input
-                    type="email"
-                    placeholder="Enter your username / email"
+                    type="text"
+                    value={formData.identifier}
+                    placeholder="yourname@email.com"
                     required
-                    className="w-full pl-11 pr-4 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
-                    style={POP}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium"
+                    onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5 group">
-                <label className="text-[12px] text-[#0C0C0D] ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
-                  Password
+              {/* Input Password */}
+              <div className="space-y-2 group text-left">
+                <label className="text-[10px] text-zinc-400 uppercase tracking-widest ml-1 font-black group-focus-within:text-[#946C44] transition-colors">
+                  Security Key
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-4 text-gray-300 group-focus-within:text-[#946C44] transition-colors">
-                    <Lock className="w-5 h-5" />
-                  </span>
+                  <Lock className="absolute left-4 w-5 h-5 text-zinc-300 group-focus-within:text-[#946C44] transition-colors" />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
                     placeholder="••••••••"
                     required
-                    className="w-full pl-11 pr-12 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44] focus:bg-white outline-none transition-all text-sm text-gray-800 placeholder:text-gray-300"
-                    style={POP}
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium"
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 text-gray-300 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 text-zinc-300 hover:text-zinc-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              {(emailError || successMsg) && (
-                <div className={`text-[10px] sm:text-xs p-2.5 rounded-lg border animate-in fade-in duration-300 ${
-                  emailError ? 'bg-red-50 text-red-500 border-red-100' : 'bg-amber-50 text-[#946C44] border-amber-100'
+              {/* Notifications */}
+              {(errorMsg || successMsg) && (
+                <div className={`text-[11px] font-bold p-4 rounded-2xl border transition-all ${
+                  errorMsg ? 'bg-red-50 text-red-500 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                 }`}>
-                  {emailError || successMsg}
+                  {errorMsg || successMsg}
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center py-1">
-                <label className="flex items-center cursor-pointer group w-fit">
-                  <input
-                    type="checkbox"
-                    className="hidden"
-                    checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
-                  />
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${rememberMe ? "border-[#946C44] bg-[#946C44]" : "border-gray-300 bg-white"}`}>
-                    {rememberMe && <Check className="w-2.5 h-2.5 text-white" strokeWidth={4} />}
-                  </div>
-                  <span className="ml-2 text-[11px] sm:text-xs" style={{ ...PJS, fontWeight: 700, color: "#0C0C0D" }}>Remember Me</span>
-                </label>
-                <Link to="/forgot-password" 
-                  className="text-[11px] sm:text-xs text-[#946C44] hover:text-[#7A5836] font-bold text-left" 
-                  style={PJS}
+              {/* Options */}
+              <div className="flex justify-between items-center px-1">
+                <button 
+                  type="button"
+                  onClick={() => setRememberMe(!rememberMe)}
+                  className="flex items-center gap-2 cursor-pointer group"
                 >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${rememberMe ? "border-[#946C44] bg-[#946C44]" : "border-zinc-200 group-hover:border-zinc-300"}`}>
+                    {rememberMe && <Check className="w-3 h-3 text-white" strokeWidth={4} />}
+                  </div>
+                  <span className="text-[11px] font-black text-zinc-400 group-hover:text-zinc-800 transition-colors">Remember Me</span>
+                </button>
+                <Link to="/forgot-password" size={11} className="text-[11px] text-[#946C44] font-black hover:underline tracking-tight">
                   Forgot Password?
                 </Link>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full h-[44px] sm:h-[48px] rounded-xl sm:rounded-2xl uppercase flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 mt-2"
-                style={{
-                  ...PJS,
-                  fontWeight: 800,
-                  fontSize: "12px",
-                  letterSpacing: "1.5px",
-                  backgroundImage: "url('/images/Login_Button.png')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
+                disabled={isLoading}
+                className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-black text-[11px] uppercase tracking-[0.25em] shadow-xl hover:bg-[#946C44] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70 disabled:hover:bg-zinc-900 disabled:transform-none flex items-center justify-center gap-3"
               >
-                LOGIN
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Enter The Hall"
+                )}
               </button>
             </form>
 
-            <p className="mt-8 text-center text-gray-400 text-[11px] sm:text-xs" style={{ ...POP, fontWeight: 500 }}>
-              Don't have an account?{' '}
-              <Link to="/register" className="text-[#946C44] hover:underline underline-offset-4 font-bold" style={PJS}>
-                Sign Up
+            <p className="mt-10 text-center text-zinc-400 text-[11px] font-bold tracking-tight">
+              New to the Guild?{' '}
+              <Link to="/register" className="text-[#946C44] hover:underline font-black">
+                Create Account
               </Link>
             </p>
           </div>
