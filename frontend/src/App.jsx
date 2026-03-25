@@ -5,14 +5,14 @@ import { useEffect, useState } from 'react';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-// Pages
+// Pages - Pastikan nama file di folder "pages" juga sama persis (Besar Kecilnya)
 import Homepage from "./pages/Homepage";
-import Profilepage from "./pages/Profilepage";
-import Dashboardpage from './pages/Dashboardpage';
-import Loginpage from './pages/Loginpage';
-import Registerpage from './pages/Registerpage';
-import Questpage from './pages/Questpage';
-import Analyticspage from './pages/Analyticspage';
+import ProfilePage from "./pages/Profilepage"; // Sesuaikan jika filenya Profilepage.jsx
+import DashboardPage from './pages/Dashboardpage'; 
+import LoginPage from './pages/Loginpage';
+import RegisterPage from './pages/Registerpage';
+import QuestPage from './pages/Questpage';
+import AnalyticsPage from './pages/Analyticspage';
 import ForgotPassword from './pages/ForgotPassword';
 import NotificationPage from './pages/Notificationpage';
 
@@ -24,6 +24,11 @@ import FAQ from "./pages/FAQ";
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const location = useLocation();
+
+  // Memastikan status auth terupdate saat navigasi
+  useEffect(() => {
+    setIsAuth(!!localStorage.getItem("token"));
+  }, [location.pathname]);
 
   const hideNavbar = [
     '/login', 
@@ -40,10 +45,6 @@ function App() {
     '/forgot-password'
   ].includes(location.pathname);
 
-  useEffect(() => {
-    setIsAuth(!!localStorage.getItem("token"));
-  }, [location.pathname]);
-
   return (
     <>
       {!hideNavbar && <Navbar />}
@@ -52,8 +53,8 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={isAuth ? <Navigate to="/dashboard" replace /> : <Homepage />} />
-          <Route path="/login" element={isAuth ? <Navigate to="/dashboard" replace /> : <Loginpage />} />
-          <Route path="/register" element={isAuth ? <Navigate to="/dashboard" replace /> : <Registerpage />} />
+          <Route path="/login" element={isAuth ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+          <Route path="/register" element={isAuth ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
           <Route path="/forgot-password" element={isAuth ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
 
           {/* Legal & Info Pages */}
@@ -62,10 +63,10 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
 
           {/* Protected Routes */}
-          <Route path="/dashboard" element={isAuth ? <Dashboardpage /> : <Navigate to="/login" replace />} />
-          <Route path="/profile" element={isAuth ? <Profilepage /> : <Navigate to="/login" replace />} />
-          <Route path="/quests" element={isAuth ? <Questpage /> : <Navigate to="/login" replace />} />
-          <Route path="/analytics" element={isAuth ? <Analyticspage /> : <Navigate to="/login" replace />} />
+          <Route path="/dashboard" element={isAuth ? <DashboardPage /> : <Navigate to="/login" replace />} />
+          <Route path="/profile" element={isAuth ? <ProfilePage /> : <Navigate to="/login" replace />} />
+          <Route path="/quests" element={isAuth ? <QuestPage /> : <Navigate to="/login" replace />} />
+          <Route path="/analytics" element={isAuth ? <AnalyticsPage /> : <Navigate to="/login" replace />} />
           <Route path="/notifications" element={isAuth ? <NotificationPage /> : <Navigate to="/login" replace />} />
 
           {/* Catch-all */}
