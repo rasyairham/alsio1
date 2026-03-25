@@ -24,14 +24,18 @@ const LoginPage = () => {
     setSuccessMsg("");
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      // PERBAIKAN: Menggunakan relative path agar sesuai dengan konfigurasi Vercel Rewrites
+      const res = await axios.post('/api/auth/login', formData);
+      
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.username);
       localStorage.setItem('email', res.data.email);
       localStorage.setItem('userImage', res.data.profileImage || "");
 
       setSuccessMsg("Login successful! Redirecting...");
-      setTimeout(() => navigate('/'), 1000);
+      
+      // Redirect ke dashboard setelah login berhasil
+      setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
       let backendMsg = err.response?.data?.message || "Login failed. Please check your credentials.";
       setEmailError(backendMsg);
