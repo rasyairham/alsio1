@@ -45,44 +45,66 @@ const FAQ = () => {
   return (
     <>
       <style>{fontStyle}</style>
-      <div className="min-h-screen bg-[#FAF7F4]" style={POP}>
-        <div className="max-w-3xl mx-auto px-6 pt-36 pb-16">
+      <div className="min-h-screen bg-[#FAF7F4] transition-all duration-300" style={POP}>
+        {/* Container Utama: Responsif px (padding horizontal) */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-36 pb-16">
+          
+          {/* Tombol Back: Ukuran text lebih besar sedikit di mobile untuk aksesibilitas */}
           <button
             onClick={() => navigate('/')}
-            className="mb-6 flex items-center gap-2 text-sm text-[#946C44] hover:text-[#7A5836] transition-colors"
+            className="mb-6 flex items-center gap-2 text-sm sm:text-base text-[#946C44] hover:text-[#7A5836] transition-colors"
             style={{ ...PJS, fontWeight: 700 }}
           >
             <i className="ri-arrow-left-line text-lg"></i> Back to Home
           </button>
 
-          <div className="mb-12">
-            <h1 className="text-4xl text-[#1A1310] mb-4" style={{ ...PJS, fontWeight: 800 }}>Frequently Asked Questions</h1>
-            <p className="text-sm text-gray-400" style={{ ...POP, fontWeight: 400 }}>Everything you need to know about ALSIO.</p>
+          {/* Header: Judul mengecil di mobile (text-3xl ke text-4xl) */}
+          <div className="mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl text-[#1A1310] mb-3 sm:mb-4" style={{ ...PJS, fontWeight: 800 }}>
+              Frequently Asked Questions
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400" style={{ ...POP, fontWeight: 400 }}>
+              Everything you need to know about ALSIO.
+            </p>
             <div className="mt-6 h-px bg-[#EAE0D0]"></div>
           </div>
 
-          <div className="space-y-12">
+          <div className="space-y-8 sm:space-y-12">
             {faqs.map((group, gi) => (
               <div key={gi}>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4" style={{ ...PJS, fontWeight: 700 }}>{group.category}</p>
-                <div className="space-y-2">
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-4" style={{ ...PJS, fontWeight: 700 }}>
+                  {group.category}
+                </p>
+                <div className="space-y-3">
                   {group.items.map((item, ii) => {
                     const key = `${gi}-${ii}`;
                     const isOpen = openIndex === key;
                     return (
-                      <div key={key} className="bg-white rounded-2xl border border-[#EAE0D0] overflow-hidden transition-all">
+                      <div 
+                        key={key} 
+                        className={`bg-white rounded-xl sm:rounded-2xl border border-[#EAE0D0] overflow-hidden transition-all duration-300 ${isOpen ? 'shadow-md border-[#946C44]/20' : ''}`}
+                      >
                         <button
                           onClick={() => toggle(key)}
-                          className="w-full flex justify-between items-center px-6 py-4 text-left"
+                          className="w-full flex justify-between items-start sm:items-center px-4 sm:px-6 py-4 text-left gap-3"
                         >
-                          <span className="text-sm text-[#1A1310] pr-4" style={{ ...PJS, fontWeight: 700 }}>{item.q}</span>
-                          <span className={`text-[#946C44] transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-45' : ''}`}>
-                            <i className="ri-add-line text-lg"></i>
+                          <span 
+                            className="text-xs sm:text-sm text-[#1A1310]" 
+                            style={{ ...PJS, fontWeight: 700, lineHeight: '1.5' }}
+                          >
+                            {item.q}
+                          </span>
+                          <span className={`text-[#946C44] transition-transform duration-300 flex-shrink-0 mt-0.5 sm:mt-0 ${isOpen ? 'rotate-45' : ''}`}>
+                            <i className="ri-add-line text-xl"></i>
                           </span>
                         </button>
+
+                        {/* Animasi Sederhana saat dibuka */}
                         {isOpen && (
-                          <div className="px-6 pb-5 border-t border-[#EAE0D0]">
-                            <p className="text-sm text-gray-500 leading-relaxed pt-4" style={{ ...POP, fontWeight: 400 }}>{item.a}</p>
+                          <div className="px-4 sm:px-6 pb-5 border-t border-[#EAE0D0] animate-in fade-in slide-in-from-top-2 duration-300">
+                            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed pt-4" style={{ ...POP, fontWeight: 400 }}>
+                              {item.a}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -91,6 +113,13 @@ const FAQ = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Footer FAQ: Tambahan bantuan jika belum terjawab */}
+          <div className="mt-16 text-center">
+            <p className="text-xs text-gray-400" style={POP}>
+              Still have questions? Contact us at <span className="text-[#946C44] font-bold">alsiobertiga@gmail.com</span>
+            </p>
           </div>
         </div>
       </div>

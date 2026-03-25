@@ -16,7 +16,6 @@ const Footer = () => {
 
   const handleNavClick = (id) => {
     const elementId = id.toLowerCase();
-
     if (location.pathname !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -33,7 +32,6 @@ const Footer = () => {
     }
   };
 
-  // ✅ FIXED: explicit path (no dynamic string)
   const supportLinks = [
     { label: 'Privacy Policy', path: '/privacy-policy' },
     { label: 'Terms of Service', path: '/terms-of-service' },
@@ -44,46 +42,46 @@ const Footer = () => {
     <>
       <style>{fontStyle}</style>
 
-      <footer className="bg-[#FDFAF5] border-t border-[#EAE0D0] pt-16 pb-8 px-6">
+      <footer className="bg-[#FDFAF5] border-t border-[#EAE0D0] pt-12 md:pt-16 pb-8 px-6">
         <div className="max-w-6xl mx-auto">
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Grid Container */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12 mb-12">
 
-            {/* Logo Section */}
-            <div className="col-span-1 md:col-span-2 flex flex-col" style={{ gap: "24px", marginTop: "-60px" }}>
+            {/* Logo Section - Responsive Alignment */}
+            <div className="col-span-1 sm:col-span-2 flex flex-col items-center md:items-start text-center md:text-left">
               <div
-                className="flex items-center cursor-pointer"
+                className="flex items-center cursor-pointer mb-2 md:mb-0"
                 onClick={() => navigate('/')}
+                style={{ marginLeft: "-20px" }} // Menyeimbangkan whitespace logo
               >
                 <img
                   src="/alsio.webp"
                   alt="Logo"
-                  className="object-contain"
-                  style={{ width: "120px", height: "120px", marginLeft: "-40px" }}
+                  className="object-contain w-[80px] h-[80px] md:w-[120px] md:h-[120px]"
                 />
                 <img
                   src="/Text_Alsio.webp"
                   alt="ALSIO"
-                  className="object-contain"
-                  style={{ width: "180px", height: "160px", marginLeft: "-75px" }}
+                  className="object-contain w-[120px] h-[100px] md:w-[180px] md:h-[160px]"
+                  style={{ marginLeft: "-45px" }} // Responsif margin untuk teks logo
                 />
               </div>
 
               <p
-                className="text-gray-500 text-sm leading-relaxed max-w-sm"
-                style={{ ...POP, fontWeight: 400, marginTop: "-55px" }}
+                className="text-gray-500 text-sm leading-relaxed max-w-sm md:mt-[-40px]"
+                style={{ ...POP, fontWeight: 400 }}
               >
                 Maintain your productivity streak and earn bonus XP for completing tasks consistently.
               </p>
             </div>
 
-            {/* Explore */}
-            <div className="flex flex-col" style={{ gap: "24px" }}>
-              <h4 className="text-sm text-gray-800" style={{ ...PJS, fontWeight: 700 }}>
+            {/* Explore - Grid Layout */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
+              <h4 className="text-sm text-gray-800 uppercase tracking-widest" style={{ ...PJS, fontWeight: 800 }}>
                 Explore
               </h4>
-
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {['About', 'Features', 'Contact'].map((item) => (
                   <li key={item}>
                     <button
@@ -98,13 +96,12 @@ const Footer = () => {
               </ul>
             </div>
 
-            {/* Support */}
-            <div className="flex flex-col" style={{ gap: "24px" }}>
-              <h4 className="text-sm text-gray-800" style={{ ...PJS, fontWeight: 700 }}>
+            {/* Support - Grid Layout */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
+              <h4 className="text-sm text-gray-800 uppercase tracking-widest" style={{ ...PJS, fontWeight: 800 }}>
                 Support
               </h4>
-
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {supportLinks.map((item) => (
                   <li key={item.path}>
                     <Link
@@ -121,13 +118,13 @@ const Footer = () => {
 
           </div>
 
-          {/* Bottom */}
-          <div className="pt-8 border-t border-[#EAE0D0] flex justify-center items-center">
+          {/* Bottom Copyright */}
+          <div className="pt-8 border-t border-[#EAE0D0] flex flex-col md:flex-row justify-center items-center gap-4">
             <p
-              className="text-[12px] text-gray-400 text-center"
+              className="text-[11px] md:text-[12px] text-gray-400 text-center"
               style={{ ...POP, fontWeight: 400 }}
             >
-              © {currentYear} ALSIO. All rights reserved.
+              © {currentYear} ALSIO — Level Up Your Productivity.
             </p>
           </div>
 
