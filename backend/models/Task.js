@@ -8,7 +8,7 @@ const taskSchema = new mongoose.Schema({
   },
   title: {
     type: String,
-    required: [true, 'Nama quest wajib diisi'],
+    required: [true, 'Task name is required'],
     trim: true
   },
   description: {
@@ -25,7 +25,7 @@ const taskSchema = new mongoose.Schema({
   },
   deadline: {
     type: Date,
-    required: [true, 'Deadline wajib diisi']
+    required: [true, 'Deadline is required']
   },
   status: {
     type: String,
@@ -34,6 +34,6 @@ const taskSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// INI BAGIAN PALING PENTING. Jangan sampai salah tulis!
+// THIS IS THE MOST IMPORTANT PART. Do not misspell!
 const Task = mongoose.model('Task', taskSchema);
 module.exports = Task;

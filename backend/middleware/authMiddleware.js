@@ -10,15 +10,18 @@ const protect = async (req, res, next) => {
       
       req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {
-        return res.status(401).json({ success: false, message: 'User tidak ditemukan' });
+        return res.status(401).json({ success: false, message: 'User not found' });
       }
       return next(); 
     }
-    if (!token) return res.status(401).json({ success: false, message: 'Token tidak ada' });
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Token missing' });
+    }
   } catch (error) {
-    return res.status(401).json({ success: false, message: 'Sesi habis' });
+    return res.status(401).json({ success: false, message: 'Session expired' });
   }
 };
 
-// Pastikan export seperti ini
+// Make sure to export like this
 module.exports = { protect };

@@ -1,36 +1,36 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 
-// --- 1. GET ALL TASKS (DENGAN AUTO-PENALTY CHECK) ---
+// --- 1. GET ALL TASKS (WITH AUTO-PENALTY CHECK) ---
 exports.getAllTasks = async (req, res) => {
   try {
     const now = new Date();
     
-    // 1. Ambil semua task user yang belum selesai tapi sudah lewat deadline
+    // 1. Get all user's pending tasks that are overdue
     const overdueTasks = await Task.find({
       user: req.user.id,
       status: "pending",
       deadline: { $lt: now },
-      penaltyApplied: { $ne: true } // Pastikan belum pernah kena penalti
+      penaltyApplied: { $ne: true } // Make sure penalty not applied yet
     });
 
-    // 2. Jika ada task yang telat, kurangi XP user
+    // 2. If there are overdue tasks, deduct user XP
     if (overdueTasks.length > 0) {
-      const penaltyAmount = overdueTasks.length * 50; // Penalti 50 XP per task
+      const penaltyAmount = overdueTasks.length * 50; // 50 XP penalty per task
       
-      // Update XP User (Gunakan $inc dengan nilai negatif)
+      // Update User XP (use $inc with negative value)
       await User.findByIdAndUpdate(req.user.id, { 
         $inc: { xp: -penaltyAmount } 
       });
 
-      // Tandai semua task tersebut agar tidak kena penalti lagi di refresh berikutnya
+      // Mark tasks so they won't be penalized again
       await Task.updateMany(
         { _id: { $in: overdueTasks.map(t => t._id) } },
         { $set: { penaltyApplied: true, status: "failed" } }
       );
     }
 
-    // 3. Ambil data terbaru untuk dikirim ke frontend
+    // 3. Fetch updated tasks to return to frontend
     const tasks = await Task.find({ user: req.user.id }).sort({ createdAt: -1 });
     
     res.status(200).json({ 
@@ -49,7 +49,7 @@ exports.createTask = async (req, res) => {
     const { title, description, deadline, category, xp } = req.body;
     
     if (!title || !deadline) {
-      return res.status(400).json({ success: false, message: "Title dan Deadline wajib diisi!" });
+      return res.status(400).json({ success: false, message: "Title and Deadline are required!" });
     }
 
     const newTask = new Task({
@@ -60,7 +60,7 @@ exports.createTask = async (req, res) => {
       category: category || "General",
       xp: xp || 100,
       status: "pending",
-      penaltyApplied: false // Inisialisasi field penalti
+      penaltyApplied: false // Initialize penalty field
     });
 
     const savedTask = await newTask.save();
@@ -76,16 +76,16 @@ exports.completeTask = async (req, res) => {
     const task = await Task.findOne({ _id: req.params.id, user: req.user.id });
     
     if (!task) {
-      return res.status(404).json({ success: false, message: "Quest tidak ditemukan" });
+      return res.status(404).json({ success: false, message: "Task not found" });
     }
 
     if (task.status === "completed") {
-      return res.status(400).json({ success: false, message: "Quest ini sudah pernah diklaim!" });
+      return res.status(400).json({ success: false, message: "This task has already been completed!" });
     }
 
-    // Tambahan: Jika statusnya failed (telat), tidak bisa dikomplitkan untuk dapat XP
+    // If task failed due to overdue, cannot complete for XP
     if (task.status === "failed") {
-      return res.status(400).json({ success: false, message: "Quest sudah kadaluwarsa dan gagal!" });
+      return res.status(400).json({ success: false, message: "Task expired and failed!" });
     }
 
     task.status = "completed";
@@ -99,12 +99,12 @@ exports.completeTask = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
     res.status(200).json({ 
       success: true, 
-      message: `Quest Clear! +${xpReward} XP`, 
+      message: `Task completed! +${xpReward} XP`, 
       data: task,
       userStats: {
         xp: updatedUser.xp,
@@ -122,10 +122,10 @@ exports.deleteTask = async (req, res) => {
     const deletedTask = await Task.findOneAndDelete({ _id: req.params.id, user: req.user.id });
     
     if (!deletedTask) {
-      return res.status(404).json({ success: false, message: "Quest tidak ditemukan" });
+      return res.status(404).json({ success: false, message: "Task not found" });
     }
 
-    res.json({ success: true, message: "Quest dihapus dari sejarah" });
+    res.json({ success: true, message: "Task removed from history" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

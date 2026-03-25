@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// --- KONFIGURASI EMAIL ---
+// --- EMAIL CONFIGURATION ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -19,20 +19,16 @@ exports.sendOTP = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!password || password.length < 6) {
-      return res.status(400).json({ message: "Password minimal 6 karakter!" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email sudah terdaftar!" });
+      return res.status(400).json({ message: "This email is already registered!" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     tempOTPs.set(email, {
       otp: otp,
-      expires: Date.now() + 300000 
+      expires: Date.now() + 300000 // 5 minutes
     });
 
     const mailOptions = {
@@ -51,7 +47,7 @@ exports.sendOTP = async (req, res, next) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "OTP terkirim ke email!" });
+    res.status(200).json({ message: "OTP sent to your email!" });
 
   } catch (error) {
     next(error);
@@ -64,22 +60,20 @@ exports.register = async (req, res, next) => {
     const { username, email, password, otp } = req.body;
 
     const storedData = tempOTPs.get(email);
-    if (!storedData) return res.status(400).json({ message: "Minta OTP terlebih dahulu!" });
+    if (!storedData) return res.status(400).json({ message: "Request OTP first!" });
     
     if (Date.now() > storedData.expires) {
       tempOTPs.delete(email);
-      return res.status(400).json({ message: "OTP Kadaluwarsa!" });
+      return res.status(400).json({ message: "OTP has expired!" });
     }
     
-    if (storedData.otp !== otp) return res.status(400).json({ message: "OTP Salah!" });
+    if (storedData.otp !== otp) return res.status(400).json({ message: "Incorrect OTP!" });
 
-    // PERBAIKAN: Jangan hash di sini. Langsung masukkan password asli.
-    // Middleware pre('save') di User.js baris 69 akan menghashnya otomatis.
     const user = new User({ username, email, password }); 
     await user.save();
 
     tempOTPs.delete(email);
-    res.status(201).json({ message: "Registrasi Berhasil!" });
+    res.status(201).json({ message: "Registration successful!" });
   } catch (error) {
     next(error); 
   }
@@ -90,7 +84,7 @@ exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Email tidak ditemukan!" });
+    if (!user) return res.status(404).json({ message: "Email not found!" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     tempOTPs.set(email, { otp, expires: Date.now() + 300000 });
@@ -103,7 +97,7 @@ exports.forgotPassword = async (req, res, next) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "OTP Reset dikirim ke email!" });
+    res.status(200).json({ message: "Reset OTP sent to your email!" });
   } catch (error) {
     next(error);
   }
@@ -116,18 +110,17 @@ exports.resetPassword = async (req, res, next) => {
     const storedData = tempOTPs.get(email);
 
     if (!storedData || storedData.otp !== otp || Date.now() > storedData.expires) {
-      return res.status(400).json({ message: "OTP Salah atau Kadaluwarsa!" });
+      return res.status(400).json({ message: "OTP is incorrect or expired!" });
     }
 
-    // PERBAIKAN: Gunakan findOne + save agar memicu middleware hashing di model.
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    if (!user) return res.status(404).json({ message: "User not found!" });
 
     user.password = newPassword; 
     await user.save(); 
     
     tempOTPs.delete(email);
-    res.status(200).json({ message: "Password berhasil diperbarui!" });
+    res.status(200).json({ message: "Password updated successfully!" });
   } catch (error) {
     next(error);
   }
@@ -138,11 +131,10 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email }); 
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    if (!user) return res.status(404).json({ message: "User not found!" });
 
-    // Menggunakan method dari model User.js
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(400).json({ message: "Password salah" });
+    if (!isMatch) return res.status(400).json({ message: "Incorrect password!" });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
@@ -174,11 +166,11 @@ exports.updateProfile = async (req, res, next) => {
       { returnDocument: 'after', runValidators: true } 
     );
 
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    if (!user) return res.status(404).json({ message: "User not found!" });
 
     res.json({
       success: true,
-      message: "Profil diperbarui",
+      message: "Profile updated successfully",
       username: user.username,
       profileImage: user.profileImage
     });
@@ -191,7 +183,7 @@ exports.updateProfile = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    if (!user) return res.status(404).json({ message: "User not found!" });
     res.json(user);
   } catch (error) {
     next(error);

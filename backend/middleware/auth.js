@@ -5,7 +5,7 @@ const protect = async (req, res, next) => {
   try {
     let token;
 
-    // 1. Cek header Authorization
+    // 1. Check Authorization header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
@@ -13,56 +13,55 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
 
-    // Jika token tidak ada
+    // If no token is provided
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Akses ditolak, silakan login terlebih dahulu.",
+        message: "Access denied, please login first.",
       });
     }
 
-    // 2. Verifikasi Token
-    // Kita bungkus verify dalam try-catch internal atau biarkan ditangkap catch utama
+    // 2. Verify Token
+    // Wrapped in try-catch or handled by main catch
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3. Ambil data user
-    // .lean() ditambahkan jika Anda hanya butuh data read-only untuk performa lebih cepat
-    // .select('-password') sangat penting untuk keamanan
+    // 3. Fetch user data
+    // .select('-password') is important for security
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User sudah tidak terdaftar atau token tidak valid.",
+        message: "User not found or token is invalid.",
       });
     }
 
-    // 4. Simpan ke request object
+    // 4. Attach user to request object
     req.user = user;
     next();
     
   } catch (error) {
     console.error("❌ Auth Middleware Error:", error.message);
 
-    // Penanganan error JWT yang lebih spesifik
+    // Specific JWT error handling
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
-        message: "Sesi Anda telah berakhir, silakan login ulang.",
+        message: "Your session has expired, please login again.",
       });
     }
 
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
-        message: "Token tidak valid atau rusak.",
+        message: "Invalid or corrupted token.",
       });
     }
 
-    // Error umum lainnya
+    // Other general errors
     res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan pada server saat verifikasi akun.",
+      message: "An error occurred on the server while verifying your account.",
     });
   }
 };

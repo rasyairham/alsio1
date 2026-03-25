@@ -4,28 +4,28 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
   username: { 
     type: String, 
-    required: [true, "Username wajib diisi"], 
+    required: [true, "Username is required"], 
     trim: true 
   },
   email: { 
     type: String, 
-    required: [true, "Email wajib diisi"], 
+    required: [true, "Email is required"], 
     unique: true,
     lowercase: true, 
     trim: true 
   },
   password: { 
     type: String, 
-    required: [true, "Password wajib diisi"],
-    minlength: [6, "Password minimal 6 karakter"] 
+    required: [true, "Password is required"],
+    minlength: 6 // removed custom error message
   },
   profileImage: { type: String, default: "" },
   
-  // --- STATISTIK GAMIFIKASI (ALSIO SYSTEM) ---
+  // --- GAMIFICATION STATISTICS (ALSIO SYSTEM) ---
   xp: { 
     type: Number, 
     default: 0,
-    min: [0, "XP tidak boleh negatif"] 
+    min: [0, "XP cannot be negative"] 
   },
   streak: { 
     type: Number, 
@@ -51,25 +51,19 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// --- MIDDLEWARE: HASH PASSWORD SEBELUM SIMPAN ---
-// PERBAIKAN: Menghapus parameter 'next' karena menggunakan 'async'
+// --- MIDDLEWARE: HASH PASSWORD BEFORE SAVE ---
 userSchema.pre('save', async function() {
-  // Jika password tidak dimodifikasi, langsung keluar (return)
-  if (!this.isModified('password')) {
-    return;
-  }
+  if (!this.isModified('password')) return;
   
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    // Di fungsi async, Mongoose otomatis lanjut setelah promise resolve
   } catch (error) {
-    // Melempar error agar ditangkap oleh penanganan error Mongoose/Express
     throw error; 
   }
 });
 
-// Method untuk verifikasi password saat login
+// Method to verify password during login
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
