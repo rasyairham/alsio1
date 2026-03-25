@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+// PERBAIKAN: Import dari file konfigurasi api kamu
+import api from '../api/axios'; 
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
 
@@ -27,7 +28,8 @@ const RegisterPage = () => {
     if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/send-otp', {
+      // PERBAIKAN: Menggunakan relative path dan instance 'api'
+      await api.post('/auth/send-otp', {
         email: formData.email,
         password: formData.password
       });
@@ -49,7 +51,8 @@ const RegisterPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/register', formData);
+      // PERBAIKAN: Menggunakan relative path dan instance 'api'
+      await api.post('/auth/register', formData);
       showNotification("Welcome to ALSIO!");
       navigate('/login');
     } catch (err) {
@@ -87,7 +90,6 @@ const RegisterPage = () => {
         {/* Main Card Container */}
         <div className="w-full max-w-[1050px] mx-auto bg-white rounded-[24px] sm:rounded-[32px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col lg:flex-row overflow-hidden relative z-10 transition-all duration-500 min-h-[500px]">
           
-          {/* Left Panel - Hidden on Mobile/Tablet smaller than LG */}
           <div
             className="hidden lg:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden transition-all"
             style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
@@ -105,7 +107,6 @@ const RegisterPage = () => {
             </div>
           </div>
 
-          {/* Right Panel - Form */}
           <div className="w-full lg:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white">
             <div className="mb-8 text-center lg:text-left">
               <h2 className="text-2xl sm:text-3xl text-[#111] tracking-tight mb-2" style={{ ...PJS, fontWeight: 900 }}>
@@ -214,9 +215,7 @@ const RegisterPage = () => {
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
-                  <>
-                    <span>{step === 1 ? "Verify Email" : "Complete Registration"}</span>
-                  </>
+                  <span>{step === 1 ? "Verify Email" : "Complete Registration"}</span>
                 )}
               </button>
             </form>

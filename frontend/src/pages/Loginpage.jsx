@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+// IMPORT DARI FILE CONFIG KAMU (Sesuaikan path foldernya)
+import api from '../api/axios'; 
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff, Check, ArrowLeft } from "lucide-react";
 
@@ -24,8 +25,10 @@ const LoginPage = () => {
     setSuccessMsg("");
 
     try {
-      // PERBAIKAN: Menggunakan relative path agar sesuai dengan konfigurasi Vercel Rewrites
-      const res = await axios.post('/api/auth/login', formData);
+      /** * PERBAIKAN: Cukup tulis '/auth/login'
+       * Karena baseURL di axios.js sudah diset ke '/api'
+       */
+      const res = await api.post('/auth/login', formData); 
       
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', res.data.username);
@@ -33,9 +36,7 @@ const LoginPage = () => {
       localStorage.setItem('userImage', res.data.profileImage || "");
 
       setSuccessMsg("Login successful! Redirecting...");
-      
-      // Redirect ke dashboard setelah login berhasil
-      setTimeout(() => navigate('/dashboard'), 1000);
+      setTimeout(() => navigate('/'), 1000);
     } catch (err) {
       let backendMsg = err.response?.data?.message || "Login failed. Please check your credentials.";
       setEmailError(backendMsg);
@@ -70,7 +71,6 @@ const LoginPage = () => {
         {/* Main Card Container */}
         <div className="w-full max-w-[1050px] bg-white rounded-[24px] sm:rounded-[32px] shadow-[0_1px_9px_rgba(0,0,0,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 transition-all duration-500 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
           
-          {/* Left Panel (Visible on Desktop only) */}
           <div
             className="hidden md:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden z-20"
             style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
@@ -86,10 +86,8 @@ const LoginPage = () => {
             </div>
           </div>
 
-          {/* Right Panel (Form) */}
           <div className="w-full md:w-1/2 p-6 sm:p-10 md:p-16 bg-white flex flex-col justify-center">
             
-            {/* Header Content */}
             <div className="mb-8 text-center md:text-left">
               <h2 className="text-2xl sm:text-3xl text-[#111] tracking-tight mb-2" style={{ ...PJS, fontWeight: 900 }}>
                 Welcome Back
@@ -100,7 +98,6 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
-              {/* Input Username/Email */}
               <div className="space-y-1.5 group">
                 <label className="text-[12px] text-[#0C0C0D] ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
                   Username / Email
@@ -120,7 +117,6 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Input Password */}
               <div className="space-y-1.5 group">
                 <label className="text-[12px] text-[#0C0C0D] ml-1 transition-colors group-focus-within:text-[#946C44]" style={{ ...PJS, fontWeight: 700 }}>
                   Password
@@ -147,7 +143,6 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Status Messages */}
               {(emailError || successMsg) && (
                 <div className={`text-[10px] sm:text-xs p-2.5 rounded-lg border animate-in fade-in duration-300 ${
                   emailError ? 'bg-red-50 text-red-500 border-red-100' : 'bg-amber-50 text-[#946C44] border-amber-100'
@@ -156,7 +151,6 @@ const LoginPage = () => {
                 </div>
               )}
 
-              {/* Remember Me & Forgot Password */}
               <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center py-1">
                 <label className="flex items-center cursor-pointer group w-fit">
                   <input
@@ -178,7 +172,6 @@ const LoginPage = () => {
                 </Link>
               </div>
 
-              {/* Login Button */}
               <button
                 type="submit"
                 className="w-full h-[44px] sm:h-[48px] rounded-xl sm:rounded-2xl uppercase flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 mt-2"
@@ -196,7 +189,6 @@ const LoginPage = () => {
               </button>
             </form>
 
-            {/* Footer Link */}
             <p className="mt-8 text-center text-gray-400 text-[11px] sm:text-xs" style={{ ...POP, fontWeight: 500 }}>
               Don't have an account?{' '}
               <Link to="/register" className="text-[#946C44] hover:underline underline-offset-4 font-bold" style={PJS}>
