@@ -3,13 +3,12 @@
   "builds": [
     { "src": "backend/server.js", "use": "@vercel/node" }
   ],
-  "rewrites": [
     { 
       "source": "/api/(.*)", 
       "destination": "backend/server.js" 
     },
     { 
-      "source": "/((?!api/).*)", 
+      "source": "/(.*)", 
       "destination": "/index.html" 
     }
   ]
