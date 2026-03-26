@@ -6,8 +6,8 @@
       "destination": "/backend/server.js"
     },
     {
-      "source": "/((?!api|static|images|favicon.ico).*)",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "destination": "/frontend/index.html"
     }
   ]
 }
