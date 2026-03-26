@@ -2,9 +2,7 @@
   "name": "alsio-monorepo",
   "version": "1.0.0",
   "scripts": {
-    "install-frontend": "cd frontend && npm install --legacy-peer-deps",
-    "install-backend": "cd backend && npm install",
-    "install": "npm run install-frontend && npm run install-backend",
+    "install": "cd frontend && npm install --legacy-peer-deps && cd ../backend && npm install",
     "build": "cd frontend && npm run build"
   }
 }
