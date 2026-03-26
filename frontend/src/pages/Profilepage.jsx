@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Mail, LogOut, Edit3, User, ShieldCheck, ChevronLeft, Bell, Star, Trophy } from 'lucide-react';
-import api from "../api/api"; // Gunakan instance axios yang sudah kita buat sebelumnya
+// PERBAIKAN: Mengarah ke instance axios yang benar
+import api from "../api/axios"; 
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -46,7 +47,6 @@ const ProfilePage = () => {
     return Math.min((earnedInTier / neededForNext) * 100, 100);
   }, [userData.xp, currentTier]);
 
-  // Fungsi sinkronisasi data dari SERVER (Bukan cuma localStorage)
   const fetchSyncData = useCallback(async () => {
     try {
       const [userRes, notifRes] = await Promise.all([
@@ -63,7 +63,7 @@ const ProfilePage = () => {
           xp: freshUser.xp,
           streak: freshUser.streak || 0
         });
-        // Update localStorage agar tetap sinkron ke seluruh app
+        
         localStorage.setItem("username", freshUser.username);
         localStorage.setItem("email", freshUser.email);
         localStorage.setItem("xp", freshUser.xp);
@@ -114,7 +114,6 @@ const ProfilePage = () => {
         localStorage.setItem("username", updated.username);
         if (updated.profileImage) localStorage.setItem("userImage", updated.profileImage);
         setIsModalOpen(false);
-        // Trigger event agar Navbar ikut berubah
         window.dispatchEvent(new Event("storage"));
       }
     } catch (err) {
@@ -223,7 +222,7 @@ const ProfilePage = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
           <div className="relative w-full max-w-md bg-white border border-zinc-100 rounded-[2.5rem] sm:rounded-[4rem] p-6 sm:p-10 shadow-2xl">
-            <h2 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 text-center tracking-tight text-left">Identity <span className="text-[#C29976]">Update</span></h2>
+            <h2 className="text-xl sm:text-2xl font-black mb-6 sm:mb-10 text-center tracking-tight">Identity <span className="text-[#C29976]">Update</span></h2>
             <form onSubmit={handleSaveChanges} className="space-y-6 sm:space-y-8">
               <div className="flex flex-col items-center gap-4">
                 <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] sm:rounded-[2.5rem] border-4 border-[#F8F5F2] p-1 cursor-pointer overflow-hidden" onClick={() => fileInputRef.current.click()}>

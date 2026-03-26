@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import api from "../api/api"; 
+// PERBAIKAN: Mengarah ke instance axios yang benar
+import api from "../api/axios"; 
 import { useNavigate } from "react-router-dom";
 
 const Dashboardpage = () => {
   const navigate = useNavigate();
 
-  // State awal mengambil data dari localStorage sebagai cadangan agar tidak kosong (0) saat loading
+  // State awal mengambil data dari localStorage sebagai cadangan
   const [userData, setUserData] = useState({ 
     username: localStorage.getItem("username") || "Commander", 
     xp: parseInt(localStorage.getItem("xp")) || 0, 
@@ -72,17 +73,16 @@ const Dashboardpage = () => {
         api.get("/tasks")
       ]);
       
-      // PERBAIKAN: Deteksi otomatis apakah data user di dalam userRes.data atau userRes.data.user
       const freshUser = userRes.data?.user || userRes.data;
       if (freshUser) {
         setUserData(prev => ({ ...prev, ...freshUser }));
-        // Update localStorage agar Navbar & Dashboard sinkron
         localStorage.setItem("username", freshUser.username);
         localStorage.setItem("xp", freshUser.xp);
         localStorage.setItem("streak", freshUser.streak || 0);
+        // Trigger event agar komponen lain tersinkron
+        window.dispatchEvent(new Event("storage"));
       }
 
-      // PERBAIKAN: Deteksi data tasks
       const freshTasks = tasksRes.data?.data || tasksRes.data;
       if (Array.isArray(freshTasks)) {
         setTasks(freshTasks);
@@ -278,6 +278,7 @@ const Dashboardpage = () => {
           </div>
         )}
 
+        {/* Floating Action Button */}
         <button onClick={() => setIsModalOpen(true)} className="fixed bottom-10 right-10 bg-zinc-900 text-white w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] shadow-2xl flex items-center justify-center hover:bg-[#C29976] transition-all active:scale-90 z-[100] group">
           <i className="ri-add-line text-4xl group-hover:rotate-90 transition-transform"></i>
         </button>

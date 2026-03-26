@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api from '../api/api'; 
+// PERBAIKAN: Mengarah ke instance axios yang benar
+import api from '../api/axios'; 
 import { Sword, Zap, CheckCircle2, Trash2, Ghost, X, Trophy, Skull } from "lucide-react";
 
 // --- REUSABLE NOTIFICATION PORTAL ---
@@ -76,6 +77,8 @@ const Questpage = () => {
       });
       
       localStorage.setItem("xp", currentXp);
+      // Trigger event agar komponen lain (seperti Navbar) tahu ada perubahan XP
+      window.dispatchEvent(new Event("storage"));
     } catch (err) { 
       console.error("Fetch Error:", err);
     } finally { 
@@ -90,17 +93,10 @@ const Questpage = () => {
       await api.patch(`/tasks/${taskId}/complete`);
       notify('success', `+${xpValue} XP: ${title} Finished!`);
       
+      // Optimistic UI update
       setQuests(prev => prev.map(q => q._id === taskId ? { ...q, status: 'completed' } : q));
-      setUserStats(prev => {
-        const newXp = prev.xp + xpValue;
-        localStorage.setItem("xp", newXp);
-        return { 
-          ...prev, 
-          xp: newXp, 
-          totalTasksDone: prev.totalTasksDone + 1 
-        };
-      });
-
+      
+      // Refresh data untuk memastikan XP sinkron dengan backend
       fetchData(); 
     } catch (err) {
       notify('error', 'Failed to complete quest.');
@@ -169,7 +165,6 @@ const Questpage = () => {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      {/* PERBAIKAN: Tombol Hapus diletakkan di luar agar selalu muncul di tab Active maupun Completed */}
                       <button 
                         onClick={() => handleDelete(quest._id)}
                         className="p-4 text-zinc-300 hover:text-red-500 transition-colors"
@@ -229,7 +224,7 @@ const Questpage = () => {
                 </div>
 
                 <div className="absolute -bottom-10 -right-10 opacity-10 rotate-12">
-                   <Trophy size={200} />
+                    <Trophy size={200} />
                 </div>
               </div>
             </div>
