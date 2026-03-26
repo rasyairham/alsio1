@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 /**
- * Konfigurasi Instance Axios ALSIO - Versi Stabil Vercel
+ * Konfigurasi Instance Axios ALSIO - Optimized for Vercel & Refresh Persistence
  */
 const api = axios.create({
-  // Gunakan jalur relatif agar Vercel Proxy bekerja otomatis
-  baseURL: '/api', 
+  // Jika pakai Vercel Rewrites, gunakan '/api'
+  // Jika langsung ke backend, gunakan URL lengkap (misal: https://api-alsio.vercel.app)
+  baseURL: import.meta.env.VITE_API_URL || '/api', 
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -14,12 +15,14 @@ const api = axios.create({
   withCredentials: true, 
 });
 
-// Interceptor Request: Memastikan token dikirim dengan format yang benar
+/**
+ * INTERCEPTOR REQUEST
+ * Kunci agar saat REFRESH, token selalu nempel di header
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Pastikan format "Bearer <token>" tidak ada typo
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -28,31 +31,38 @@ api.interceptors.request.use(
 );
 
 /**
- * Interceptor Response: Menangani Error & Debugging
+ * INTERCEPTOR RESPONSE
+ * Menangani error 401 (Token Expired/Invalid) secara bersih
  */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Jika Unauthorized (401), bersihkan storage kecuali di halaman auth
-    if (error.response && error.response.status === 401) {
+    const { response } = error;
+
+    // Jika Unauthorized (401), hapus SEMUA jejak login
+    if (response && response.status === 401) {
       const currentPath = window.location.pathname;
       const authPaths = ['/login', '/register', '/'];
-      
+
       if (!authPaths.includes(currentPath)) {
-        console.warn("Sesi berakhir, silakan login kembali.");
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        // Jangan langsung redirect agar tidak looping error, user bisa klik login manual
+        console.warn("Sesi berakhir atau token tidak valid. Membersihkan data...");
+        
+        // Hapus semua key yang kita gunakan di ProfilePage
+        const keysToRemove = ['token', 'user', 'username', 'userImage', 'xp', 'email'];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+
+        // Opsional: Redirect ke login jika bukan di halaman landing
+        // window.location.href = '/login'; 
       }
     }
-    
-    // Log Error ke Console untuk Debugging Reyfan
-    if (error.response) {
-      console.error(`Backend Error (${error.response.status}):`, error.response.data);
+
+    // Log Error untuk Reyfan (Bantu Debugging di Production)
+    if (response) {
+      console.error(`[Backend Error ${response.status}]:`, response.data.message || response.data);
     } else if (error.request) {
-      console.error("No Response dari Backend. Cek Vercel Logs atau MongoDB IP Whitelist (0.0.0.0/0).");
+      console.error("[Network Error]: Tidak ada respon dari server. Cek koneksi atau CORS.");
     }
-    
+
     return Promise.reject(error);
   }
 );
