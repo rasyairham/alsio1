@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm install --prefix frontend --include=dev && cd frontend && ./node_modules/.bin/vite build",
+  "buildCommand": "npm install --prefix frontend --include=dev && cd frontend && node node_modules/vite/bin/vite.js build",
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install --prefix backend",
   "rewrites": [
