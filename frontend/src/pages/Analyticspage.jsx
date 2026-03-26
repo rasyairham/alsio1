@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 
 const Analyticspage = () => {
   const [tasks, setTasks] = useState([]);
@@ -7,10 +7,7 @@ const Analyticspage = () => {
 
   const fetchLogs = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/tasks/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/tasks/");
 
       const now = new Date();
       const filtered = res.data?.data?.filter(t => {
@@ -47,7 +44,7 @@ const Analyticspage = () => {
     <div className="min-h-screen bg-[#F8F5F2] pt-24 md:pt-32 pb-10 md:pb-20 px-4 md:px-6 font-sans">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header - Center on mobile */}
+        {/* Header */}
         <header className="mb-8 md:mb-12 text-center md:text-left">
           <h1 className="text-3xl md:text-5xl font-black text-zinc-900 tracking-tighter">
             Mission <span className="text-[#C29976]">History</span>
@@ -55,7 +52,7 @@ const Analyticspage = () => {
           <p className="text-zinc-400 text-xs mt-2 font-bold uppercase tracking-widest md:hidden">Battle Logs 24h</p>
         </header>
 
-        {/* Stats Cards - Adaptive Grid */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
           {[
             { label: 'Successful Missions', value: completed, color: 'text-emerald-500', suffix: 'Missions' },
@@ -73,7 +70,7 @@ const Analyticspage = () => {
           ))}
         </div>
 
-        {/* Table Container - Mobile Card Layout */}
+        {/* Table */}
         <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] border border-zinc-100 shadow-2xl overflow-hidden">
           <div className="p-6 md:p-10 border-b border-zinc-50 bg-zinc-50/30 flex justify-between items-center">
             <h2 className="font-black text-lg md:text-xl text-zinc-800 uppercase tracking-tighter italic">Battle Logs</h2>
@@ -84,7 +81,7 @@ const Analyticspage = () => {
           </div>
 
           <div className="w-full">
-            {/* Desktop Table - Hidden on Mobile */}
+            {/* Desktop Table */}
             <table className="w-full text-left border-collapse hidden md:table">
               <thead>
                 <tr className="bg-white text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
@@ -117,11 +114,18 @@ const Analyticspage = () => {
                       {new Date(task.updatedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                   </tr>
-                )) : null}
+                )) : (
+                  <tr>
+                    <td colSpan={4} className="px-10 py-20 text-center">
+                      <i className="ri-inbox-archive-line text-5xl text-zinc-200"></i>
+                      <p className="text-zinc-300 font-black uppercase tracking-widest text-[9px] mt-4 italic">No Archive for today</p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
 
-            {/* Mobile View - Cards Layout (Visible only on small screens) */}
+            {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-zinc-50">
               {tasks.length > 0 ? tasks.map(task => (
                 <div key={task._id} className="p-6 space-y-4">
@@ -134,7 +138,6 @@ const Analyticspage = () => {
                       {task.status === 'completed' ? 'Success' : 'Failed'}
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center pt-2">
                     <div className="flex flex-col">
                       <span className="text-[9px] text-zinc-400 font-black uppercase tracking-widest">Effect</span>
@@ -152,8 +155,8 @@ const Analyticspage = () => {
                 </div>
               )) : (
                 <div className="py-20 text-center">
-                   <i className="ri-inbox-archive-line text-5xl text-zinc-200"></i>
-                   <p className="text-zinc-300 font-black uppercase tracking-widest text-[9px] mt-4 italic">No Archive for today</p>
+                  <i className="ri-inbox-archive-line text-5xl text-zinc-200"></i>
+                  <p className="text-zinc-300 font-black uppercase tracking-widest text-[9px] mt-4 italic">No Archive for today</p>
                 </div>
               )}
             </div>
