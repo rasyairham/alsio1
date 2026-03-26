@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Camera, Mail, LogOut, Edit3, User, ShieldCheck, ChevronLeft, Bell, Star, Trophy, Loader2 } from 'lucide-react';
 // PERBAIKAN: Gunakan instance api yang sudah kita buat sebelumnya agar base URL konsisten
-import api from '../api/api'; 
+import api from '../api/axios'; 
 
 const ProfilePage = () => {
   const navigate = useNavigate();
