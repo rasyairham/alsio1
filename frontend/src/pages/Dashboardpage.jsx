@@ -1,10 +1,18 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import api from "../api/api"; // PERBAIKAN: Pastikan path ke config axios baru kamu benar
+import api from "../api/api"; 
 import { useNavigate } from "react-router-dom";
 
 const Dashboardpage = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({ username: "Commander", xp: 0, streak: 0, totalTasksDone: 0 });
+
+  // State awal mengambil data dari localStorage sebagai cadangan agar tidak kosong (0) saat loading
+  const [userData, setUserData] = useState({ 
+    username: localStorage.getItem("username") || "Commander", 
+    xp: parseInt(localStorage.getItem("xp")) || 0, 
+    streak: parseInt(localStorage.getItem("streak")) || 0, 
+    totalTasksDone: 0 
+  });
+  
   const [tasks, setTasks] = useState([]);
   const [taskData, setTaskData] = useState({ title: "", description: "", deadline: "" });
   const [loading, setLoading] = useState(true);
@@ -20,7 +28,6 @@ const Dashboardpage = () => {
   ];
 
   const calculateLevel = (xp = 0) => {
-    // Definisi Milestone yang lebih presisi
     const milestones = [
       { lvl: 1, xp: 0, tier: "Newbie" },
       { lvl: 6, xp: 1000, tier: "Explorer" },
@@ -40,7 +47,6 @@ const Dashboardpage = () => {
       } else break;
     }
 
-    // Hitung display level (interpolasi)
     const xpRange = next.xp - current.xp;
     const xpGained = xp - current.xp;
     const lvlRange = next.lvl - current.lvl;
@@ -66,28 +72,41 @@ const Dashboardpage = () => {
         api.get("/tasks")
       ]);
       
-      // PERBAIKAN: Validasi data user dari backend
-      if (userRes.data?.user) {
-        setUserData(userRes.data.user);
+      // PERBAIKAN: Deteksi otomatis apakah data user di dalam userRes.data atau userRes.data.user
+      const freshUser = userRes.data?.user || userRes.data;
+      if (freshUser) {
+        setUserData(prev => ({ ...prev, ...freshUser }));
+        // Update localStorage agar Navbar & Dashboard sinkron
+        localStorage.setItem("username", freshUser.username);
+        localStorage.setItem("xp", freshUser.xp);
+        localStorage.setItem("streak", freshUser.streak || 0);
       }
-      if (tasksRes.data?.data) {
-        setTasks(tasksRes.data.data);
+
+      // PERBAIKAN: Deteksi data tasks
+      const freshTasks = tasksRes.data?.data || tasksRes.data;
+      if (Array.isArray(freshTasks)) {
+        setTasks(freshTasks);
       }
     } catch (err) { 
       console.error("Fetch Error:", err);
-      // Jika token tidak valid, arahkan ke login
-      if (err.response?.status === 401) navigate("/login");
+      if (err.response?.status === 401) {
+        localStorage.clear();
+        navigate("/login");
+      }
     } finally { 
       setLoading(false); 
     }
   }, [navigate]);
 
-  useEffect(() => { refreshAllData(); }, [refreshAllData]);
+  useEffect(() => { 
+    refreshAllData(); 
+  }, [refreshAllData]);
 
   const handleAddTask = async e => {
     e.preventDefault();
+    if (!taskData.title || !taskData.deadline) return alert("Please fill Title and Deadline");
+    
     try {
-      // PERBAIKAN: Proteksi deadline agar tidak kosong
       const payload = { 
         ...taskData, 
         deadline: new Date(taskData.deadline).toISOString(), 
@@ -97,13 +116,12 @@ const Dashboardpage = () => {
       await api.post("/tasks/create", payload);
       setIsModalOpen(false); 
       setTaskData({ title: "", description: "", deadline: "" }); 
-      refreshAllData(); // Refresh list setelah tambah data
+      refreshAllData(); 
     } catch (err) { 
       alert(err.response?.data?.message || "Failed to launch mission."); 
     }
   };
 
-  // Filter tugas yang masih aktif
   const activeTasks = useMemo(() => {
     return tasks.filter(t => 
       t.status !== 'completed' && 
@@ -113,8 +131,9 @@ const Dashboardpage = () => {
   }, [tasks]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F5F2]">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F5F2] gap-4">
       <div className="h-16 w-16 border-8 border-zinc-100 border-t-[#C29976] rounded-full animate-spin"></div>
+      <p className="text-zinc-400 font-black text-xs tracking-[0.3em] animate-pulse">SYNCING DATA...</p>
     </div>
   );
 
@@ -158,9 +177,8 @@ const Dashboardpage = () => {
 
         {/* Stats Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {/* XP Card */}
-          <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 md:p-14 border border-zinc-100 shadow-2xl relative overflow-hidden group">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4 text-left">
+          <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 md:p-14 border border-zinc-100 shadow-2xl relative overflow-hidden group text-left">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
               <div>
                 <p className="text-[10px] uppercase font-black text-zinc-300 mb-3 tracking-widest">Power Level</p>
                 <h2 className="text-7xl md:text-8xl font-black text-zinc-900 italic tracking-tighter group-hover:text-[#C29976] transition-colors leading-none">Lv. {stats.level}</h2>
@@ -170,7 +188,6 @@ const Dashboardpage = () => {
                 <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest italic">Required: {stats.nextLevelXP.toLocaleString()}</p>
               </div>
             </div>
-            {/* Progress Bar */}
             <div className="w-full h-8 bg-zinc-50 rounded-full overflow-hidden mb-6 border-4 border-white shadow-inner p-1">
               <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${stats.progress}%`, background: 'linear-gradient(90deg, #111 0%, #C29976 100%)' }}></div>
             </div>
@@ -180,9 +197,8 @@ const Dashboardpage = () => {
             </div>
           </div>
 
-          {/* Streak Card */}
-          <div className="bg-zinc-900 rounded-[3rem] p-10 md:p-14 shadow-2xl text-white flex flex-col justify-between relative overflow-hidden">
-            <div className="text-left">
+          <div className="bg-zinc-900 rounded-[3rem] p-10 md:p-14 shadow-2xl text-white flex flex-col justify-between relative overflow-hidden text-left">
+            <div>
               <p className="text-[11px] uppercase font-bold text-zinc-600 tracking-widest mb-10">Active Streak</p>
               <h3 className="text-8xl md:text-[9rem] font-black tracking-tighter leading-none">{userData.streak}</h3>
             </div>
@@ -262,7 +278,6 @@ const Dashboardpage = () => {
           </div>
         )}
 
-        {/* Floating Action Button */}
         <button onClick={() => setIsModalOpen(true)} className="fixed bottom-10 right-10 bg-zinc-900 text-white w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] shadow-2xl flex items-center justify-center hover:bg-[#C29976] transition-all active:scale-90 z-[100] group">
           <i className="ri-add-line text-4xl group-hover:rotate-90 transition-transform"></i>
         </button>

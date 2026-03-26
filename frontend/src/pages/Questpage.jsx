@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/api'; 
-import { Sword, Zap, Clock, CheckCircle2, Shield, Trash2, Ghost, ChevronRight, ClipboardList, X, AlertTriangle, Trophy, Skull } from "lucide-react";
+import { Sword, Zap, CheckCircle2, Trash2, Ghost, X, Trophy, Skull } from "lucide-react";
 
 // --- REUSABLE NOTIFICATION PORTAL ---
 const NotificationPortal = ({ notifications, onDismiss }) => (
@@ -13,7 +13,11 @@ const NotificationPortal = ({ notifications, onDismiss }) => (
 
 const ToastCard = ({ notif, onDismiss }) => {
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setVisible(true); }, []);
+  useEffect(() => { 
+    setVisible(true); 
+    const timer = setTimeout(() => setVisible(false), 3700);
+    return () => clearTimeout(timer);
+  }, []);
   
   const config = {
     success: { bg: '#111111', accent: '#C29976', icon: <Trophy size={18} color="#C29976" />, label: 'MISSION COMPLETE' },
@@ -29,7 +33,7 @@ const ToastCard = ({ notif, onDismiss }) => {
     >
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-lg" style={{ background: `${c.accent}15` }}>{c.icon}</div>
-        <div className="flex-1">
+        <div className="flex-1 text-left">
           <p className="text-[8px] font-black tracking-widest uppercase mb-0.5" style={{ color: c.accent }}>{c.label}</p>
           <p className="text-sm font-bold text-white">{notif.message}</p>
         </div>
@@ -55,17 +59,23 @@ const Questpage = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
       const [resQuests, resUser] = await Promise.all([
         api.get("/tasks"), 
         api.get("/auth/me")
       ]);
+      
       setQuests(resQuests.data.data || []);
+      
+      const user = resUser.data.user || resUser.data;
+      const currentXp = user.xp || 0;
+      
       setUserStats({ 
-        xp: resUser.data.user?.xp || 0, 
-        totalTasksDone: resUser.data.user?.totalTasksDone || 0, 
-        username: resUser.data.user?.username || "Commander" 
+        xp: currentXp, 
+        totalTasksDone: user.totalTasksDone || 0, 
+        username: user.username || "Commander" 
       });
+      
+      localStorage.setItem("xp", currentXp);
     } catch (err) { 
       console.error("Fetch Error:", err);
     } finally { 
@@ -75,13 +85,36 @@ const Questpage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleComplete = async (taskId, title, xp) => {
+  const handleComplete = async (taskId, title, xpValue) => {
     try {
       await api.patch(`/tasks/${taskId}/complete`);
-      notify('success', `+${xp} XP: ${title} Finished!`);
-      fetchData(); // Update stats & list secara realtime
+      notify('success', `+${xpValue} XP: ${title} Finished!`);
+      
+      setQuests(prev => prev.map(q => q._id === taskId ? { ...q, status: 'completed' } : q));
+      setUserStats(prev => {
+        const newXp = prev.xp + xpValue;
+        localStorage.setItem("xp", newXp);
+        return { 
+          ...prev, 
+          xp: newXp, 
+          totalTasksDone: prev.totalTasksDone + 1 
+        };
+      });
+
+      fetchData(); 
     } catch (err) {
       notify('error', 'Failed to complete quest.');
+    }
+  };
+
+  const handleDelete = async (taskId) => {
+    if(!window.confirm("Abandon this quest?")) return;
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      notify('info', 'Quest removed from board.');
+      setQuests(prev => prev.filter(q => q._id !== taskId));
+    } catch (err) {
+      notify('error', 'Failed to delete quest.');
     }
   };
 
@@ -100,7 +133,7 @@ const Questpage = () => {
       <NotificationPortal notifications={notifications} onDismiss={(id) => setNotifications(n => n.filter(i => i.id !== id))} />
       <div className="min-h-screen bg-[#F8F5F2] p-6 pt-32 pb-24 font-sans text-zinc-900">
         <div className="max-w-7xl mx-auto">
-          <header className="mb-12">
+          <header className="mb-12 text-left">
             <h1 className="text-5xl font-black tracking-tighter mb-2">Quest <span className="text-[#C29976]">Board</span></h1>
             <p className="text-zinc-400 italic">Carry on your ambition, {userStats.username}.</p>
           </header>
@@ -126,26 +159,45 @@ const Questpage = () => {
                       <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${quest.status === 'completed' ? 'bg-emerald-50 text-emerald-500' : 'bg-zinc-50 text-[#C29976]'}`}>
                         {quest.status === 'completed' ? <CheckCircle2 /> : <Sword />}
                       </div>
-                      <div>
-                        <h3 className="font-black text-xl text-zinc-800">{quest.title}</h3>
+                      <div className="text-left">
+                        <h3 className="font-black text-xl text-zinc-800 line-clamp-1">{quest.title}</h3>
                         <div className="flex items-center gap-2 mt-1">
                            <Zap size={14} className="text-[#C29976] fill-[#C29976]" />
                            <span className="text-xs font-bold text-zinc-400">+{quest.xp || 100} XP</span>
                         </div>
                       </div>
                     </div>
-                    {quest.status !== 'completed' && (
+                    
+                    <div className="flex items-center gap-3">
+                      {/* PERBAIKAN: Tombol Hapus diletakkan di luar agar selalu muncul di tab Active maupun Completed */}
                       <button 
-                        onClick={() => handleComplete(quest._id, quest.title, quest.xp || 100)}
-                        className="bg-zinc-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#C29976] transition-colors"
+                        onClick={() => handleDelete(quest._id)}
+                        className="p-4 text-zinc-300 hover:text-red-500 transition-colors"
+                        title="Delete Quest"
                       >
-                        Claim
+                        <Trash2 size={20} />
                       </button>
-                    )}
+
+                      {quest.status !== 'completed' ? (
+                        <button 
+                          onClick={() => handleComplete(quest._id, quest.title, quest.xp || 100)}
+                          className="bg-zinc-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#C29976] transition-colors shadow-lg shadow-zinc-200"
+                        >
+                          Claim
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full">
+                           <CheckCircle2 size={14} className="text-emerald-500" />
+                           <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">
+                             Vanquished
+                           </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )) : (
                   <div className="py-20 text-center border-4 border-dashed border-zinc-200 rounded-[3rem]">
-                    <Ghost className="mx-auto mb-4 text-zinc-300" />
+                    <Ghost className="mx-auto mb-4 text-zinc-300" size={48} />
                     <p className="text-zinc-400 font-black uppercase text-xs tracking-widest">No Quests Found</p>
                   </div>
                 )}
@@ -154,20 +206,30 @@ const Questpage = () => {
 
             {/* Sidebar Stats */}
             <div className="lg:col-span-4">
-              <div className="bg-zinc-900 p-10 rounded-[3.5rem] text-white shadow-xl relative overflow-hidden">
+              <div className="bg-zinc-900 p-10 rounded-[3.5rem] text-white shadow-xl relative overflow-hidden sticky top-32">
                 <div className="relative z-10 text-left">
                   <p className="text-[10px] font-black text-[#C29976] uppercase tracking-widest mb-1">Total Progress</p>
-                  <h2 className="text-4xl font-black tracking-tighter mb-6">{userStats.xp.toLocaleString()} <span className="text-sm opacity-50">XP</span></h2>
+                  <h2 className="text-4xl font-black tracking-tighter mb-6">
+                    {userStats.xp.toLocaleString()} <span className="text-sm opacity-50 italic">XP</span>
+                  </h2>
                   
                   <div className="space-y-4">
-                    <div className="flex justify-between text-[10px] font-black uppercase opacity-50">
-                      <span>Missions Vanquished</span>
+                    <div className="flex justify-between text-[10px] font-black uppercase opacity-50 italic">
+                      <span>Missions Finished</span>
                       <span>{userStats.totalTasksDone}</span>
                     </div>
                     <div className="h-3 bg-white/10 rounded-full overflow-hidden p-1">
-                      <div className="h-full bg-[#C29976] rounded-full transition-all duration-1000" style={{ width: `${Math.min((userStats.xp/5000)*100, 100)}%` }}></div>
+                      <div 
+                        className="h-full bg-[#C29976] rounded-full transition-all duration-1000" 
+                        style={{ width: `${Math.min((userStats.xp / 5000) * 100, 100)}%` }}
+                      ></div>
                     </div>
+                    <p className="text-[9px] text-zinc-500 italic uppercase">Next milestone at 5,000 XP</p>
                   </div>
+                </div>
+
+                <div className="absolute -bottom-10 -right-10 opacity-10 rotate-12">
+                   <Trophy size={200} />
                 </div>
               </div>
             </div>
