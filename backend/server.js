@@ -16,7 +16,7 @@ app.use(cors({
     /\.vercel\.app$/           
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Tambahkan ini untuk menghindari 405
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
@@ -27,19 +27,19 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// 2. DATABASE CONNECTION (Optimized)
+// 2. DATABASE CONNECTION (Optimized for Serverless)
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 const connectDB = async () => {
   if (mongoose.connection.readyState >= 1) return;
   
   try {
-    await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 10000,
-    });
+    // Menghapus opsi deprecated dan fokus pada koneksi cepat
+    await mongoose.connect(MONGO_URI);
     console.log('✅ DATABASE CONNECTED');
   } catch (err) {
     console.error('❌ DB CONNECTION ERROR:', err.message);
+    // Jangan lempar error di sini agar serverless tidak crash sebelum mengirim response error
   }
 };
 
@@ -55,13 +55,13 @@ const taskRoutes = require('./routes/taskRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
 // 4. REGISTER ROUTES
-// Gunakan middleware tunggal agar kode lebih bersih
+// PENTING: Gunakan dbMiddleware di semua route agar login/task tidak gagal karena DB "tidur"
 app.use('/api/auth', dbMiddleware, authRoutes);
 app.use('/api/tasks', dbMiddleware, taskRoutes);
 app.use('/api/notifications', dbMiddleware, notificationRoutes);
 
-// Health Check
-app.get('/api', dbMiddleware, (req, res) => {
+// Health Check & DB Status
+app.get('/api/health', dbMiddleware, (req, res) => {
   res.status(200).json({ 
     status: 'active', 
     dbStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
@@ -73,6 +73,7 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ success: false, message: 'File too large! Max 10MB.' });
   }
+  console.error("Internal Error:", err.message);
   res.status(500).json({ 
     success: false, 
     message: 'Internal Server Error.',
