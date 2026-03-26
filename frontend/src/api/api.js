@@ -2,7 +2,6 @@ import axios from 'axios';
 
 /**
  * Konfigurasi Instance Axios untuk ALSIO
- * Otomatis mendeteksi apakah sedang di Localhost atau Vercel
  */
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -12,7 +11,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 20000, // Dinaikkan sedikit ke 20s karena Serverless Vercel kadang butuh waktu "Cold Start"
+  timeout: 20000,
+  // TAMBAHAN KRUSIAL: Agar cookies/authorization headers terkirim dengan aman di Vercel
+  withCredentials: true, 
 });
 
 // Interceptor Request: Otomatis menyisipkan Token JWT
@@ -20,7 +21,6 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Perbaikan: Gunakan backticks yang konsisten
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -34,32 +34,25 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Tangani 401 (Unauthorized)
     if (error.response && error.response.status === 401) {
       const currentPath = window.location.pathname;
-      
-      // PERBAIKAN: List halaman yang tidak boleh kena auto-redirect agar tidak loop
       const noRedirectPaths = ['/login', '/register', '/'];
       
       if (!noRedirectPaths.includes(currentPath)) {
         console.warn("Sesi berakhir. Mengarahkan ke login...");
-        localStorage.removeItem('token'); // Hapus spesifik token saja lebih aman
+        localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
     }
     
-    // Log Error detail untuk debugging di Console Browser
     if (error.response) {
-      // 405 Method Not Allowed biasanya karena masalah routing di vercel.json
-      if (error.response.status === 405) {
-        console.error("Error 405: Cek vercel.json! Pastikan /api diarahkan ke backend/server.js");
-      }
+      // Log lebih detail jika 405 (Salah rute vercel.json) atau 404
       console.error(`API Error (${error.response.status}):`, error.response.data?.message || "Server Error");
     } else if (error.code === 'ECONNABORTED') {
-      console.error("Request Timeout: Serverless function Vercel atau DB Atlas sedang lambat.");
+      console.error("Timeout: Database Atlas atau Vercel lambat merespon.");
     } else {
-      console.error("Network Error: Cek apakah Backend sudah ter-deploy dengan benar!");
+      console.error("Network Error: Cek koneksi internet atau status server.");
     }
 
     return Promise.reject(error);
