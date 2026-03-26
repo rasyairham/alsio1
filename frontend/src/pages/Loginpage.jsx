@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import api from '../api/api'; 
+// PERBAIKAN: Mengarah ke file axios.js yang sudah kita buat sebelumnya
+import api from '../api/axios'; 
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff, Check, ArrowLeft, Loader2 } from "lucide-react";
 
@@ -16,7 +17,7 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // TAMBAHAN: Loading state
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -26,29 +27,32 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      // PERBAIKAN: Mengirim identifier ke backend. 
+      // Kita kirim sebagai email DAN username agar backend ALSIO bisa memproses salah satunya.
       const res = await api.post('/auth/login', {
-        // PERBAIKAN: Kirim identifier ke backend. 
-        // Pastikan backend ALSIO kamu menerima field 'email' atau 'identifier'
-        email: formData.identifier, 
+        email: formData.identifier,
+        username: formData.identifier,
         password: formData.password
       }); 
       
       if (res.data.token) {
-        // Simpan token dengan aman
+        // Simpan token ke localStorage
         localStorage.setItem('token', res.data.token);
         
-        // Opsional: Simpan data user agar tidak perlu fetch ulang di Dashboard
+        // Simpan data user jika ada
         if (res.data.user) {
             localStorage.setItem('user', JSON.stringify(res.data.user));
         }
         
         setSuccessMsg("Welcome back, Commander!");
         
+        // Delay sedikit agar user bisa melihat pesan sukses
         setTimeout(() => {
           navigate('/dashboard'); 
         }, 1200);
       }
     } catch (err) {
+      // Mengambil pesan error dari backend jika ada, jika tidak pakai pesan default
       const backendMsg = err.response?.data?.message || "Invalid credentials. Check your key.";
       setErrorMsg(backendMsg);
     } finally {
@@ -83,7 +87,6 @@ const LoginPage = () => {
             className="hidden md:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative min-h-[600px]"
             style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
           >
-            {/* Overlay Gradient agar teks terbaca */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
             
             <div className="z-10 bg-white/10 backdrop-blur-xl p-8 rounded-[2rem] border border-white/20 shadow-2xl">
@@ -122,7 +125,8 @@ const LoginPage = () => {
                     value={formData.identifier}
                     placeholder="yourname@email.com"
                     required
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
                     onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                   />
                 </div>
@@ -140,7 +144,8 @@ const LoginPage = () => {
                     value={formData.password}
                     placeholder="••••••••"
                     required
-                    className="w-full pl-12 pr-12 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#946C44]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                   <button

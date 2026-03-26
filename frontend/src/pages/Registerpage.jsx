@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// PERBAIKAN: Gunakan file axios/api yang konsisten (sesuai diskusi sebelumnya)
-import api from '../api/api'; 
+// PERBAIKAN: Mengarah ke file axios.js sesuai standarisasi kita
+import api from '../api/axios'; 
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 
@@ -21,6 +21,7 @@ const RegisterPage = () => {
 
   const showNotification = (message, type = "error") => {
     setNotification({ message, type });
+    // Notifikasi hilang otomatis dalam 5 detik
     setTimeout(() => setNotification({ message: "", type: "" }), 5000);
   };
 
@@ -30,15 +31,15 @@ const RegisterPage = () => {
     setEmailError("");
     
     try {
-      // PERBAIKAN: Kirim data yang dibutuhkan backend untuk verifikasi awal
+      // PERBAIKAN: Endpoint untuk mengirim kode verifikasi ke email
       await api.post('/auth/send-otp', {
         email: formData.email,
         username: formData.username
       });
       showNotification("OTP code has been sent to your email.", "success");
-      setStep(2);
+      setStep(2); // Pindah ke tahap verifikasi OTP
     } catch (err) {
-      const msg = err.response?.data?.message || "Failed to send code.";
+      const msg = err.response?.data?.message || "Failed to send code. Please try again.";
       if (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("registered")) {
         setEmailError(msg);
       } else {
@@ -53,7 +54,7 @@ const RegisterPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // PERBAIKAN: Pastikan endpoint register menerima semua field termasuk OTP
+      // PERBAIKAN: Mengirim semua data (termasuk OTP) ke backend
       await api.post('/auth/register', formData);
       showNotification("Account created! Redirecting to login...", "success");
       
@@ -61,7 +62,7 @@ const RegisterPage = () => {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      showNotification(err.response?.data?.message || "Invalid OTP code.");
+      showNotification(err.response?.data?.message || "Invalid OTP code. Please check again.");
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +141,8 @@ const RegisterPage = () => {
                         type="text"
                         placeholder="Choose a username"
                         required
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium"
+                        disabled={isLoading}
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                         value={formData.username}
                       />
@@ -156,7 +158,8 @@ const RegisterPage = () => {
                         type="email"
                         placeholder="email@example.com"
                         required
-                        className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 outline-none transition-all text-sm font-medium ${emailError ? 'border-red-400 bg-red-50' : 'border-transparent focus:border-[#C17A3A]/20 focus:bg-white'}`}
+                        disabled={isLoading}
+                        className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 outline-none transition-all text-sm font-medium disabled:opacity-50 ${emailError ? 'border-red-400 bg-red-50' : 'border-transparent focus:border-[#C17A3A]/20 focus:bg-white'}`}
                         onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setEmailError(""); }}
                         value={formData.email}
                       />
@@ -173,8 +176,9 @@ const RegisterPage = () => {
                         type="password"
                         placeholder="Min. 6 characters"
                         required
+                        disabled={isLoading}
                         minLength={6}
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium"
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         value={formData.password}
                       />
@@ -189,15 +193,22 @@ const RegisterPage = () => {
                       <ShieldCheck className="absolute left-4 w-6 h-6 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors" />
                       <input
                         type="text"
+                        inputMode="numeric"
                         placeholder="000000"
                         maxLength="6"
                         required
-                        className="w-full pl-12 pr-4 py-5 rounded-2xl bg-[#F8F7F5] border-2 border-[#C17A3A]/20 focus:border-[#C17A3A] focus:bg-white outline-none text-2xl text-center font-black tracking-[10px] transition-all shadow-inner"
-                        onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+                        disabled={isLoading}
+                        className="w-full pl-12 pr-4 py-5 rounded-2xl bg-[#F8F7F5] border-2 border-[#C17A3A]/20 focus:border-[#C17A3A] focus:bg-white outline-none text-2xl text-center font-black tracking-[10px] transition-all shadow-inner disabled:opacity-50"
+                        onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/[^0-9]/g, '') })}
                         value={formData.otp}
                       />
                     </div>
-                    <button type="button" onClick={handleRequestOTP} className="text-[11px] text-[#C17A3A] font-black hover:underline tracking-tight">
+                    <button 
+                      type="button" 
+                      disabled={isLoading}
+                      onClick={handleRequestOTP} 
+                      className="text-[11px] text-[#C17A3A] font-black hover:underline tracking-tight disabled:no-underline disabled:opacity-50"
+                    >
                       Resend Code?
                     </button>
                   </div>

@@ -1,26 +1,25 @@
 import axios from 'axios';
 
 /**
- * Konfigurasi Instance Axios untuk ALSIO
+ * Konfigurasi Instance Axios ALSIO - Versi Stabil Vercel
  */
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
 const api = axios.create({
-  // Tetap mempertahankan konsep awal: Local vs Production (Vercel)
-  baseURL: isLocal ? 'http://localhost:5000/api' : '/api', 
+  // Gunakan jalur relatif agar Vercel Proxy bekerja otomatis
+  baseURL: '/api', 
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
-  timeout: 20000,
-  // TAMBAHAN KRUSIAL: Agar cookies/authorization headers terkirim dengan aman di Vercel
+  timeout: 30000, 
   withCredentials: true, 
 });
 
-// Interceptor Request: Otomatis menyisipkan Token JWT
+// Interceptor Request: Memastikan token dikirim dengan format yang benar
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
+      // Pastikan format "Bearer <token>" tidak ada typo
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -29,32 +28,31 @@ api.interceptors.request.use(
 );
 
 /**
- * Interceptor Response: Menangani Error secara Global
+ * Interceptor Response: Menangani Error & Debugging
  */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Jika Unauthorized (401), bersihkan storage kecuali di halaman auth
     if (error.response && error.response.status === 401) {
       const currentPath = window.location.pathname;
-      const noRedirectPaths = ['/login', '/register', '/'];
+      const authPaths = ['/login', '/register', '/'];
       
-      if (!noRedirectPaths.includes(currentPath)) {
-        console.warn("Sesi berakhir. Mengarahkan ke login...");
+      if (!authPaths.includes(currentPath)) {
+        console.warn("Sesi berakhir, silakan login kembali.");
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        // Jangan langsung redirect agar tidak looping error, user bisa klik login manual
       }
     }
     
+    // Log Error ke Console untuk Debugging Reyfan
     if (error.response) {
-      // Log lebih detail jika 405 (Salah rute vercel.json) atau 404
-      console.error(`API Error (${error.response.status}):`, error.response.data?.message || "Server Error");
-    } else if (error.code === 'ECONNABORTED') {
-      console.error("Timeout: Database Atlas atau Vercel lambat merespon.");
-    } else {
-      console.error("Network Error: Cek koneksi internet atau status server.");
+      console.error(`Backend Error (${error.response.status}):`, error.response.data);
+    } else if (error.request) {
+      console.error("No Response dari Backend. Cek Vercel Logs atau MongoDB IP Whitelist (0.0.0.0/0).");
     }
-
+    
     return Promise.reject(error);
   }
 );
