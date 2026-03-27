@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// PERBAIKAN: Mengarah ke file axios.js sesuai standarisasi kita
 import api from '../api/axios'; 
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
@@ -21,7 +20,6 @@ const RegisterPage = () => {
 
   const showNotification = (message, type = "error") => {
     setNotification({ message, type });
-    // Notifikasi hilang otomatis dalam 5 detik
     setTimeout(() => setNotification({ message: "", type: "" }), 5000);
   };
 
@@ -31,13 +29,12 @@ const RegisterPage = () => {
     setEmailError("");
     
     try {
-      // PERBAIKAN: Endpoint untuk mengirim kode verifikasi ke email
       await api.post('/auth/send-otp', {
         email: formData.email,
         username: formData.username
       });
       showNotification("OTP code has been sent to your email.", "success");
-      setStep(2); // Pindah ke tahap verifikasi OTP
+      setStep(2);
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to send code. Please try again.";
       if (msg.toLowerCase().includes("email") || msg.toLowerCase().includes("registered")) {
@@ -54,13 +51,9 @@ const RegisterPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // PERBAIKAN: Mengirim semua data (termasuk OTP) ke backend
       await api.post('/auth/register', formData);
       showNotification("Account created! Redirecting to login...", "success");
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       showNotification(err.response?.data?.message || "Invalid OTP code. Please check again.");
     } finally {
@@ -85,7 +78,7 @@ const RegisterPage = () => {
               style={PJS}
             >
               <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all">
-                <i className="ri-arrow-left-line text-lg"></i>
+                <ArrowLeft className="w-5 h-5 text-[#C17A3A]" />
               </div>
               <span>{step === 2 ? "Back to Edit Info" : "Back to Home"}</span>
             </button>
@@ -120,15 +113,16 @@ const RegisterPage = () => {
                 </p>
               </div>
 
-              {notification && (
-                <div className="mb-4 p-3 text-sm text-white bg-[#C29976] rounded-lg text-center animate-in fade-in">
-                  {notification}
+              {notification.message && (
+                <div className={`mb-4 p-3 text-sm text-white rounded-lg text-center ${notification.type === 'success' ? 'bg-green-500' : 'bg-[#C29976]'} animate-in fade-in`}>
+                  {notification.message}
                 </div>
               )}
 
               <form onSubmit={step === 1 ? handleRequestOTP : handleFinalRegister} className="space-y-4">
                 {step === 1 ? (
                   <>
+                    {/* Username */}
                     <div className="space-y-2 group">
                       <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                         Username
@@ -148,6 +142,7 @@ const RegisterPage = () => {
                       </div>
                     </div>
 
+                    {/* Email */}
                     <div className="space-y-2 group">
                       <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                         Email Address
@@ -168,6 +163,7 @@ const RegisterPage = () => {
                       {emailError && <span className="text-red-500 text-[10px] ml-2">{emailError}</span>}
                     </div>
 
+                    {/* Password */}
                     <div className="space-y-2 group">
                       <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                         Password
@@ -191,6 +187,7 @@ const RegisterPage = () => {
                     </div>
                   </>
                 ) : (
+                  // OTP Step
                   <div className="space-y-4 group animate-in fade-in slide-in-from-bottom-2">
                     <label className="text-[13px] text-[#0C0C0D] tracking-normal text-center block w-full transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
                       Security Code
@@ -222,7 +219,7 @@ const RegisterPage = () => {
                   className="w-full h-[45px] rounded-2xl uppercase tracking-[2px] flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 disabled:opacity-50 mt-4"
                   style={{ ...PJS, fontWeight: 800, fontSize: "13px", backgroundImage: "url('/images/Login_Button.png')", backgroundSize: "cover", backgroundPosition: "center" }}
                 >
-                  {isLoading ? "Please Wait..." : (step === 1 ? "GET VERIFIED" : "FINISH REGISTRATION")}
+                  {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : (step === 1 ? "GET VERIFIED" : "FINISH REGISTRATION")}
                 </button>
               </form>
 
