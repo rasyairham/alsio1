@@ -71,167 +71,164 @@ const RegisterPage = () => {
   return (
     <>
       <style>{fontStyle}</style>
-      <div className="min-h-screen bg-[#FAF7F4] antialiased relative overflow-x-hidden flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8" style={POP}>
-        
-        {/* Navigation Header */}
-        <div className="w-full max-w-[1050px] mx-auto mb-6 z-20">
-          <button 
-            onClick={() => step === 2 ? setStep(1) : navigate('/')}
-            className="flex items-center gap-3 text-[#C17A3A] hover:text-[#A0652E] transition-all group font-bold text-sm"
-            style={PJS}
-          >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all border border-gray-100">
-              <ArrowLeft className="w-5 h-5" />
-            </div>
-            <span className="hidden sm:inline">{step === 2 ? "Back to Edit Info" : "Back to Home"}</span>
-          </button>
-        </div>
-
-        {/* Main Card */}
-        <div className="w-full max-w-[1050px] mx-auto bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl flex flex-col lg:flex-row overflow-hidden relative z-10 min-h-[600px] border border-zinc-100">
-          
-          {/* Left Panel */}
-          <div
-            className="hidden lg:flex w-1/2 bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden"
-            style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <div className="relative z-10 text-white">
-              <h1 className="text-4xl xl:text-5xl leading-tight mb-4 tracking-tighter" style={{ ...PJS, fontWeight: 900 }}>
-                {step === 1 ? "Start Your Journey." : "Verification."}
-              </h1>
-              <p className="text-base opacity-90 font-medium" style={PJS}>
-                {step === 1 
-                  ? "Create an account and boost your productivity with ALSIO." 
-                  : "We've sent a secret code to your email for security."}
-              </p>
-            </div>
+      <div className="flex flex-col min-h-screen bg-[#FAF7F4] antialiased" style={POP}>
+        <div className="flex-grow flex flex-col items-center justify-center p-6">
+          <div className="fixed inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#C17A3A]/10 blur-[120px] rounded-full"></div>
+            <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#A0652E]/10 blur-[120px] rounded-full"></div>
           </div>
 
-          {/* Right Panel */}
-          <div className="w-full lg:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white">
-            <div className="mb-8 text-center lg:text-left">
-              <h2 className="text-2xl sm:text-3xl text-[#111] tracking-tighter mb-2" style={{ ...PJS, fontWeight: 900 }}>
-                {step === 1 ? "Create Account" : "Confirm Email"}
-              </h2>
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-relaxed">
-                {step === 1 
-                  ? "Ambisi Leveling Siswa Intelektual Optimal" 
-                  : `Enter the 6-digit code sent to ${formData.email}`}
-              </p>
+          <div className="w-full max-w-[1050px] mb-4 z-20">
+            <button 
+              onClick={() => step === 2 ? setStep(1) : navigate('/')}
+              className="flex items-center gap-2 text-[#C17A3A] hover:text-[#A0652E] transition-all group font-bold text-sm"
+              style={PJS}
+            >
+              <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:-translate-x-1 transition-all">
+                <i className="ri-arrow-left-line text-lg"></i>
+              </div>
+              <span>{step === 2 ? "Back to Edit Info" : "Back to Home"}</span>
+            </button>
+          </div>
+
+          <div className="w-full max-w-[1050px] h-auto md:min-h-[583px] bg-white rounded-[32px] shadow-[0_1px_9px_rgba(0,0,0,0.15)] flex flex-col md:flex-row overflow-hidden relative z-10 transition-all duration-500">
+            <div
+              className="hidden md:flex w-full md:w-[525px] bg-cover bg-center p-12 flex-col justify-end relative overflow-hidden z-20 transition-all"
+              style={{ backgroundImage: "url('/images/Left_Panel.png')" }}
+            >
+              <div className="z-10 text-white">
+                <h1 className="text-5xl leading-tight mb-4 tracking-tighter" style={{ ...PJS, fontWeight: 900 }}>
+                  {step === 1 ? "Start Your Journey." : "Email Verification."}
+                </h1>
+                <p style={{ ...PJS, fontWeight: 700, fontSize: "16px" }}>
+                  {step === 1 
+                    ? "Create an account and boost your productivity with ALSIO." 
+                    : "Check your email. We've sent a secret code for verification."}
+                </p>
+              </div>
             </div>
 
-            {notification.message && (
-              <div className={`mb-6 p-4 text-[11px] font-bold rounded-2xl border text-center animate-in fade-in slide-in-from-top-1 ${
-                notification.type === "success" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-500 border-red-100"
-              }`}>
-                {notification.message}
+            <div className="w-full md:w-[525px] p-8 md:p-16 bg-white flex flex-col justify-center">
+              <div className="mb-4 text-center md:text-left">
+                <h2 className="text-3xl text-[#111] tracking-tight mb-2" style={{ ...PJS, fontWeight: 900, fontSize: "32px" }}>
+                  {step === 1 ? "Create Account" : "Confirm Email"}
+                </h2>
+                <p style={{ ...POP, fontWeight: 600, fontSize: "11px", color: "#666", letterSpacing: "-0.2px" }}>
+                  {step === 1 
+                    ? "Join ALSIO and manage your tasks efficiently." 
+                    : `Enter the 6-digit code sent to ${formData.email}`}
+                </p>
               </div>
-            )}
 
-            <form onSubmit={step === 1 ? handleRequestOTP : handleFinalRegister} className="space-y-4">
-              {step === 1 ? (
-                <div className="space-y-4">
-                  {/* Username */}
-                  <div className="space-y-2 group">
-                    <label className="text-[10px] text-zinc-400 font-black uppercase tracking-widest ml-1 group-focus-within:text-[#C17A3A] transition-colors">Username</label>
-                    <div className="relative flex items-center">
-                      <User className="absolute left-4 w-5 h-5 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors" />
-                      <input
-                        type="text"
-                        placeholder="Choose a username"
-                        required
-                        disabled={isLoading}
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
-                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                        value={formData.username}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="space-y-2 group">
-                    <label className="text-[10px] text-zinc-400 font-black uppercase tracking-widest ml-1 group-focus-within:text-[#C17A3A] transition-colors">Email Address</label>
-                    <div className="relative flex items-center">
-                      <Mail className="absolute left-4 w-5 h-5 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors" />
-                      <input
-                        type="email"
-                        placeholder="email@example.com"
-                        required
-                        disabled={isLoading}
-                        className={`w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 outline-none transition-all text-sm font-medium disabled:opacity-50 ${emailError ? 'border-red-400 bg-red-50' : 'border-transparent focus:border-[#C17A3A]/20 focus:bg-white'}`}
-                        onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setEmailError(""); }}
-                        value={formData.email}
-                      />
-                    </div>
-                    {emailError && <p className="text-red-500 text-[10px] font-bold ml-2">{emailError}</p>}
-                  </div>
-
-                  {/* Password */}
-                  <div className="space-y-2 group">
-                    <label className="text-[10px] text-zinc-400 font-black uppercase tracking-widest ml-1 group-focus-within:text-[#C17A3A] transition-colors">Password</label>
-                    <div className="relative flex items-center">
-                      <Lock className="absolute left-4 w-5 h-5 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors" />
-                      <input
-                        type="password"
-                        placeholder="Min. 6 characters"
-                        required
-                        disabled={isLoading}
-                        minLength={6}
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A]/20 focus:bg-white outline-none transition-all text-sm font-medium disabled:opacity-50"
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        value={formData.password}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6 text-center">
-                  <div className="space-y-4">
-                    <label className="text-[10px] text-zinc-400 font-black uppercase tracking-widest" style={PJS}>OTP Security Code</label>
-                    <div className="relative flex items-center justify-center group">
-                      <ShieldCheck className="absolute left-4 w-6 h-6 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors" />
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="000000"
-                        maxLength="6"
-                        required
-                        disabled={isLoading}
-                        className="w-full pl-12 pr-4 py-5 rounded-2xl bg-[#F8F7F5] border-2 border-[#C17A3A]/20 focus:border-[#C17A3A] focus:bg-white outline-none text-2xl text-center font-black tracking-[10px] transition-all shadow-inner disabled:opacity-50"
-                        onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/[^0-9]/g, '') })}
-                        value={formData.otp}
-                      />
-                    </div>
-                    <button 
-                      type="button" 
-                      disabled={isLoading}
-                      onClick={handleRequestOTP} 
-                      className="text-[11px] text-[#C17A3A] font-black hover:underline tracking-tight disabled:no-underline disabled:opacity-50"
-                    >
-                      Resend Code?
-                    </button>
-                  </div>
+              {notification && (
+                <div className="mb-4 p-3 text-sm text-white bg-[#C29976] rounded-lg text-center animate-in fade-in">
+                  {notification}
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-black text-[11px] uppercase tracking-[0.25em] shadow-xl hover:bg-[#C17A3A] hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 mt-6"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <span>{step === 1 ? "Get Security Code" : "Create Account"}</span>
-                )}
-              </button>
-            </form>
+              <form onSubmit={step === 1 ? handleRequestOTP : handleFinalRegister} className="space-y-4">
+                {step === 1 ? (
+                  <>
+                    <div className="space-y-2 group">
+                      <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                        Username
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                          <User className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="Enter your username"
+                          required
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A] focus:bg-white outline-none transition-all text-sm"
+                          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                          value={formData.username}
+                        />
+                      </div>
+                    </div>
 
-            <div className="mt-8 pt-6 border-t border-zinc-50 text-center">
-              <p className="text-zinc-400 text-[11px] font-bold tracking-tight">
-                Already part of the Guild?{' '}
-                <Link to="/login" className="text-[#C17A3A] hover:underline font-black ml-1">Login Now</Link>
+                    <div className="space-y-2 group">
+                      <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                        Email Address
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                          <Mail className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="email"
+                          placeholder="email@example.com"
+                          required
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A] focus:bg-white outline-none transition-all text-sm"
+                          onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setEmailError(""); }}
+                          value={formData.email}
+                        />
+                      </div>
+                      {emailError && <span className="text-red-500 text-[10px] ml-2">{emailError}</span>}
+                    </div>
+
+                    <div className="space-y-2 group">
+                      <label className="text-[13px] text-[#0C0C0D] tracking-normal ml-1 transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                        Password
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                          <Lock className="w-5 h-5" />
+                        </span>
+                        <input
+                          type="password"
+                          placeholder="At least 6 characters"
+                          required
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-[#F8F7F5] border-2 border-transparent focus:border-[#C17A3A] focus:bg-white outline-none transition-all text-sm"
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          value={formData.password}
+                        />
+                      </div>
+                      {formData.password && formData.password.length < 6 && (
+                        <span className="text-[10px] text-red-500 ml-2">Password too short!</span>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-4 group animate-in fade-in slide-in-from-bottom-2">
+                    <label className="text-[13px] text-[#0C0C0D] tracking-normal text-center block w-full transition-colors group-focus-within:text-[#C17A3A]" style={{ ...PJS, fontWeight: 700 }}>
+                      Security Code
+                    </label>
+                    <div className="relative flex items-center justify-center">
+                      <span className="absolute left-4 text-gray-300 group-focus-within:text-[#C17A3A] transition-colors">
+                        <ShieldCheck className="w-5 h-5" />
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="------"
+                        maxLength="6"
+                        required
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#F8F7F5] border-2 border-[#C17A3A]/20 focus:border-[#C17A3A] focus:bg-white outline-none text-2xl text-center font-bold tracking-[10px]"
+                        onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+                        value={formData.otp}
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center">
+                      Didn't receive a code?{' '}
+                      <span className="text-[#C17A3A] cursor-pointer hover:underline" onClick={handleRequestOTP}>Resend</span>
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-[45px] rounded-2xl uppercase tracking-[2px] flex items-center justify-center gap-3 text-white shadow-lg transition-all transform active:scale-[0.98] overflow-hidden hover:opacity-90 disabled:opacity-50 mt-4"
+                  style={{ ...PJS, fontWeight: 800, fontSize: "13px", backgroundImage: "url('/images/Login_Button.png')", backgroundSize: "cover", backgroundPosition: "center" }}
+                >
+                  {isLoading ? "Please Wait..." : (step === 1 ? "GET VERIFIED" : "FINISH REGISTRATION")}
+                </button>
+              </form>
+
+              <p className="mt-8 text-center text-gray-400 text-xs" style={{ ...POP, fontWeight: 500 }}>
+                Already have an account?{' '}
+                <Link to="/login" className="text-[#C29976] hover:underline underline-offset-4 font-bold" style={PJS}>Login Now</Link>
               </p>
             </div>
           </div>
