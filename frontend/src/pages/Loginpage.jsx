@@ -26,21 +26,28 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // Kirim hanya identifier & password
+      // Kirim ke backend sesuai field yang diterima (identifier = email / username)
       const res = await api.post('/auth/login', {
-        identifier: formData.identifier.trim().toLowerCase(),
+        identifier: formData.identifier.trim(),
         password: formData.password
       });
 
       if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
-        if (res.data.user) localStorage.setItem('user', JSON.stringify(res.data.user));
+        const token = res.data.token;
+        const user = res.data.user || {};
 
-        setSuccessMsg(`Welcome back, ${res.data.user?.username || 'Commander'}!`);
+        // Simpan token & user ke localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
 
+        // Remember Me: optional, bisa ditambah logic lebih lanjut
+        if (rememberMe) localStorage.setItem('rememberMe', 'true');
+
+        setSuccessMsg(`Welcome back, ${user.username || 'Commander'}!`);
         setTimeout(() => navigate('/dashboard'), 1200);
       }
     } catch (err) {
+      console.log(err.response || err.message);
       const backendMsg = err.response?.data?.message || "Email / Username or password is incorrect.";
       setErrorMsg(backendMsg);
     } finally {
