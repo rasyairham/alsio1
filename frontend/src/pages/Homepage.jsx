@@ -21,7 +21,7 @@ const Homepage = () => {
   const steps = [
     { icon: <ScrollText size={22} />, title: "Create Your Quests", desc: "Add your assignments and study tasks to the Quest Board. Set deadlines and difficulty levels for each quest.", tags: ["SCROLL", "CHECKLIST"] },
     { icon: <CheckCircle size={22} />, title: "Complete Your Tasks", desc: "Finish your study missions and mark them as completed. Stay organized and keep your productivity on track.", tags: ["TARGET", "CHECKMARK"] },
-    { icon: <Medal size={22} />, title: "Earn XP & Level Up", desc: "Gain experience points for every completed quest. Level up your account and unlock visual upgrades.", tags: ["XP BAR", "LEVEL UP"] },
+    { icon: <Medal size={22} />, title: "Earn XP & Level Up", desc: "Gain experience points for every completed quest. Level up your character and unlock visual upgrades.", tags: ["XP BAR", "LEVEL UP"] },
     { icon: <BarChart2 size={22} />, title: "Track Your Progress", desc: "Monitor your productivity with clear analytics and streaks. See how your study habits improve over time.", tags: ["CHART", "PROGRESS BAR"] },
   ];
 
@@ -37,7 +37,7 @@ const Homepage = () => {
     {
       icon: <Star size={20} />,
       title: "XP & Level System",
-      desc: "Earn experience points for completing tasks. Level up your account and unlock visual upgrades.",
+      desc: "Earn experience points for completing tasks. Level up your character and unlock visual upgrades.",
       extra: (
         <div className="mt-4">
           <div className="flex justify-between text-xs text-gray-400 mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -119,7 +119,7 @@ const Homepage = () => {
                 Level Up Your <br /> <span className="text-[#946C44]">Grades</span>
               </h1>
               <p className="text-gray-600 text-lg max-w-md" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}>
-                Turn your study tasks into exciting quests. Stay organized, earn XP, and watch your account grow.
+                Turn your study tasks into exciting quests. Stay organized, earn XP, and watch your character grow.
               </p>
               <div className="flex flex-wrap gap-4">
                 <button
@@ -265,8 +265,8 @@ const Homepage = () => {
               <h2 className="text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700 }}>About Alsio</h2>
             </div>
             <div className="space-y-4 text-gray-500 leading-relaxed text-sm" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400 }}>
-              <p>ALSIO is a web-based platform that turns studying into a fun, game-like experience. Students can add assignments to a Quest Board, complete tasks to earn XP, and level up their account.</p>
-              <p>With visual progress and rewarding milestones, ALSIO makes learning engaging and motivates consistent study habits by combining gamification with effective task management.</p>
+              <p>ALSIO is a web-based platform that turns studying into a fun RPG adventure. Students can add assignments to a Quest Board, complete tasks to earn XP, and level up their character.</p>
+              <p>With evolving avatars and visual rewards, ALSIO makes learning engaging and motivates consistent study habits by combining gamification with effective task management.</p>
             </div>
             <div className="flex gap-2 flex-wrap pt-1">
               {["Quest Board", "XP System", "Gamification"].map(tag => (
